@@ -17,6 +17,7 @@ MC::MC(std::shared_ptr<pele::BasePotential> potential, Array<double>& coords, co
       m_success(true),
       m_print_progress(false),
       m_niter(0),
+      m_max_iter(0),
       m_neval(0),
       m_temperature(temperature),
       m_report_steps(0),
@@ -181,12 +182,13 @@ void MC::reset_energy()
 void MC::run(size_t max_iter)
 {
     check_input();
+    m_max_iter = max_iter;
     progress stat(max_iter);
     while(m_niter < max_iter) {
-      this->one_iteration();
-      if (m_print_progress) {
-        stat.next(m_niter);
-      }
+        this->one_iteration();
+        if (m_print_progress) {
+            stat.next(m_niter);
+        }
     }
     m_niter = 0;
 }

@@ -110,6 +110,7 @@ public:
     double m_temperature;
     double m_energy;
     double m_trial_energy;
+    size_t m_max_iter;
 private:
     size_t m_report_steps;
     bool m_enable_input_warnings;

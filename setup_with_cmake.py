@@ -162,6 +162,7 @@ cxx_files = ["mcpele/monte_carlo/_pele_mc.cxx",
              "mcpele/monte_carlo/_conf_test_cpp.cxx",
              "mcpele/monte_carlo/_action_cpp.cxx",
              "mcpele/monte_carlo/_nullpotential_cpp.cxx",
+             "mcpele/monte_carlo/_wang_landau.cxx",
              ]
 
 def get_ldflags(opt="--ldflags"):

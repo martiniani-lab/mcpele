@@ -59,6 +59,7 @@ public:
     data_t mean() const { return m_mean; }
     data_t variance() const { return (m_mean2 - m_mean * m_mean); }
     data_t std() const { return sqrt(variance()); }
+    void reset() {m_mean = 0; m_mean2 =0; m_count = 0;}
 };
 
 class Histogram{
@@ -80,6 +81,8 @@ public:
     double bin() const { return m_bin; }
     size_t size() const { return m_N; }
     int get_count() const { return m_niter; }
+    void reset();
+    std::vector<double> get_hist() {return m_hist;}
     double get_mean() const { return m_moments.mean(); }
     double get_variance() const { return m_moments.variance(); }
     std::vector<double>::iterator begin(){ return m_hist.begin(); }

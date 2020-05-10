@@ -121,4 +121,9 @@ void Histogram::print_terminal() const
     }
 }
 
+
+void Histogram::reset() {
+    std::fill(m_hist.begin(), m_hist.end(), 0);
+    m_moments.reset();
+}
 }//namespace mcpele

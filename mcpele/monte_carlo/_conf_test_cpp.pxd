@@ -13,3 +13,5 @@ cdef extern from "mcpele/conf_test_OR.h" namespace "mcpele":
     cdef cppclass cppConfTestOR "mcpele::ConfTestOR":
         cppConfTestOR() except +
         void add_test(shared_ptr[cppConfTest]) except +
+
+
