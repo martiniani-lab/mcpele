@@ -20,4 +20,6 @@ from ._action_cpp import RecordDisplacementPerParticleTimeseries
 from ._action_cpp import RecordCoordsTimeseries
 from ._nullpotential_cpp import NullPotential
 from .mcrunner import Metropolis_MCrunner
+from ._wang_landau import WL_AcceptTest, WL_Updater
+from ._hpstep import HPStep
 

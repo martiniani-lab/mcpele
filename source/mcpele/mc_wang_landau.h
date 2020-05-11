@@ -46,15 +46,15 @@ protected:
     bool flat_histogram_check();            // Checks for the flat histogram and updates accordingly
     inline bool modification_factor_check();       // 
     void hist_dos_update(double energy);//  updates density of states and the histogram
-    std::vector<bool> visit_tracker;
-    std::vector<double> log_dos_vec;           // log density of states
-    size_t hiter;                     // Keeps track of histogram flatness iterations
+    size_t hiter;  // Keeps track of histogram flatness iterations
     size_t m_h_iter;            // no of MC iterations after which a flat histogram is checked for
     double m_max;
     double m_min;
     double m_bin;
     double m_eps;
-    size_t m_N;
+    int m_N;
+    std::vector<bool> visit_tracker;
+    std::vector<double> log_dos_vec;           // log density of states
     Histogram H_e;               // Energy Histogram
 public:
     WL_Updater(double emin, double emax, double bin, double log_f, double modifier, double log_f_threshold, double flatness_criterion, size_t h_iter);

@@ -1,4 +1,5 @@
 // Action/update that collectively define wang landau
+#include "pele/HPModel.h"
 #include "mcpele/mc_wang_landau.h"
 #include <cmath>
 #include <algorithm>
@@ -19,7 +20,7 @@ namespace mcpele {
           m_max(floor((emax / bin) + 1) * bin),
           m_bin(bin),
           m_h_iter(h_iter),
-          m_N((m_max - m_min) / bin),
+          m_N(((m_max - m_min) / bin)),
           log_dos_vec(m_N, 0),
           m_log_f(log_f),
           visit_tracker(m_N, false),
@@ -27,7 +28,12 @@ namespace mcpele {
           m_eps(std::numeric_limits<double>::epsilon()),
           m_log_f_threshold(log_f_threshold),
           m_flatness_criterion(flatness_criterion)
-    {}
+    {
+        std::cout << m_log_f << "blah \n";
+        std::cout << m_log_f_threshold << " log threshold\n";
+        std::cout << m_modifier << "constructor\n";
+        
+    }
     // This is written assuming it happens once every few xyz steps, and does not happen at first
     bool WL_Updater::flat_histogram_check() {
         // This is shitty replace pele array at some point.
@@ -66,6 +72,7 @@ namespace mcpele {
             std::cout << energy << "energy value generated \n";
             throw std::runtime_error("Not implemented when energy is outside the range yet");
         }
+
         else {
             H_e.add_entry(energy);
             log_dos_vec[i] += m_log_f;
@@ -85,13 +92,22 @@ namespace mcpele {
     
 
     void WL_Updater::action(pele::Array<double> &coords, double energy, bool accepted, MC *mc) {
+        // Horrible code pls forgive me 
+        if (!accepted) {
+            // Assume this is the HP model and revert changes from inside
+            std::shared_ptr<pele::HPModel> ptr = std::dynamic_pointer_cast<pele::HPModel>(mc -> m_potential);
+            ptr->UnDoMCMove();
+        }
+        // end horror
         // update histogram and density of states
         hist_dos_update(energy);
         // after every m_h_iter run a flat histogram check note:: flat histogram check needs to happen after n steps
         if (mc->m_niter>0 && mc->m_niter % m_h_iter == 0) {
+            std::cout << flat_histogram_check() << "flat histogram check \n";
+            std::cout << m_log_f << " log f \n";
             if (flat_histogram_check()) {
                 H_e.reset();
-                m_log_f -= m_modifier;
+                m_log_f /= m_modifier;
                 hiter++;
                 // if log f falls below threshold break out of simulation
                 if (m_log_f_threshold>m_log_f) {
@@ -121,7 +137,7 @@ namespace mcpele {
         double w, rand; 
         bool success = true;
         double log_dos_diff = m_wl_update->get_log_dos_en(old_energy) - m_wl_update->get_log_dos_en(trial_energy);
-        if (log_dos_diff > 0.){
+        if (log_dos_diff < 0.){
             double w = exp(log_dos_diff);
             rand = m_distribution(m_generator);
             if (rand > w) {

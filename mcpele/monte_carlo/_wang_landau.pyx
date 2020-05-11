@@ -85,3 +85,8 @@ cdef class _Cdef_WL_AcceptTest(_Cdef_AcceptTest):
         # TODO check that the nullptr raised when dynamic casting the wrong operator gives an exception
         self.thisptr = shared_ptr[cppAcceptTest](<cppAcceptTest*> new cppWL_AcceptTest(rseed, dynamic_pointer_cast[cppWL_Updater, cppAction](update.thisptr)))
         self.newptr = <cppWL_AcceptTest*> self.thisptr.get()
+
+
+class WL_AcceptTest(_Cdef_WL_AcceptTest):
+    """ Accept test for the pele libraries
+    """

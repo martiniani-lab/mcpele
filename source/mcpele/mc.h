@@ -88,7 +88,6 @@ public:
     typedef std::vector<std::shared_ptr<AcceptTest> > accept_t;
     typedef std::vector<std::shared_ptr<ConfTest> > conf_t;
 protected:
-    std::shared_ptr<pele::BasePotential> m_potential;
     pele::Array<double> m_coords;
     pele::Array<double> m_trial_coords;
     actions_t m_actions;
@@ -117,6 +116,7 @@ private:
 public:
     MC(std::shared_ptr<pele::BasePotential> potential, pele::Array<double>& coords, const double temperature);
     virtual ~MC() {}
+    std::shared_ptr<pele::BasePotential> m_potential;
     void one_iteration();
     void run(const size_t max_iter);
     void set_temperature(const double T) { m_temperature = T; }
