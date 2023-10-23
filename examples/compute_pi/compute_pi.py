@@ -5,6 +5,7 @@ side length 2R. By measuring the fraction of points contained within
 a ball of radius R contained in the cube, we determine Pi.
 """
 from __future__ import division
+from __future__ import print_function
 import numpy as np
 import copy
 from scipy.special import gamma
@@ -52,6 +53,6 @@ if __name__ == "__main__":
         res.append(c.pi)
         ndim_.append(ndim)
     for (i, p) in zip(ndim_, res):
-        print("dimension", i)
-        print("pi", p)
-        print("pi / np.pi", p / np.pi)
+        print(("dimension", i))
+        print(("pi", p))
+        print(("pi / np.pi", p / np.pi))

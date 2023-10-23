@@ -1,10 +1,11 @@
+from __future__ import print_function
 import numpy as np
 from mcpele.monte_carlo import _BaseMCRunner, RandomCoordsDisplacement, MetropolisTest 
 from mcpele.monte_carlo import CheckSphericalContainer, RecordEnergyHistogram
 try:
     import matplotlib.pyplot as plt
 except ImportError as err:
-    print err
+    print(err)
 
 """
 pele::MCrunner

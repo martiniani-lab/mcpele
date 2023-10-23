@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 import abc
 import numpy as np
 import random
@@ -14,7 +15,7 @@ def trymakedir(path):
             try:
                 os.makedirs(path)
                 break
-            except OSError, e:
+            except OSError as e:
                 if e.errno != 17:
                     raise
                 # time.sleep might help here
@@ -188,7 +189,7 @@ class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
         self._get_temps()
         self.T = self._scatter_single_value(self.Tarray)
         if self.verbose:
-            print "processor {0} temperature {1}".format(self.rank,self.T)
+            print("processor {0} temperature {1}".format(self.rank,self.T))
         self.mcrunner.set_control(self.T)
         self.config, self.energy = self.mcrunner.get_config()
         self._print_initialise()
@@ -209,7 +210,7 @@ class MPI_PT_RLhandshake(_MPI_Parallel_Tempering):
             self.anyswap = False
             for i in xrange(0,self.nproc,2):
                 if self.verbose:
-                    print 'exchange choice: ',self.exchange_dic[self.exchange_choice] #this is a print statement that has to be removed after initial implementation
+                    print('exchange choice: ',self.exchange_dic[self.exchange_choice]) #this is a print statement that has to be removed after initial implementation
                 E1 = Earray[i]
                 T1 = self.Tarray[i]
                 E2 = Earray[i+self.exchange_choice]

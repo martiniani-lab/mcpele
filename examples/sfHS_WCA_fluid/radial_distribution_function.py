@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 import numpy as np
 from scipy.special import gamma
 import matplotlib.pyplot as plt
@@ -51,7 +52,7 @@ class ComputeGR():
         self.step = RandomCoordsDisplacement(42, 1, single=True, nparticles=self.nr_particles, bdim=self.boxdim)
         if self.verbose:
             print ("initial MC stepsize")
-            print self.step.get_stepsize()
+            print(self.step.get_stepsize())
         self.mc.set_takestep(self.step)
         self.eq_steps = self.nr_steps / 2
         self.mc.set_report_steps(self.eq_steps)
@@ -68,7 +69,7 @@ class ComputeGR():
         self.mc.run()
         if self.verbose:
             print ("adapted MC stepsize")
-            print self.step.get_stepsize()
+            print(self.step.get_stepsize())
     def show_result(self):
         r = self.gr.get_hist_r()
         number_density = self.nr_particles / np.prod(self.box_vector)

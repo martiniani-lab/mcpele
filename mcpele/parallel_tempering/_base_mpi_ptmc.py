@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 import abc
 import numpy as np
 import random
@@ -144,7 +145,7 @@ class _MPI_Parallel_Tempering(object):
         else:
             self.base_directory = base_directory
         
-        print "processor {0} ready".format(self.rank)
+        print("processor {0} ready".format(self.rank))
     
     @abc.abstractmethod
     def _find_exchange_buddy(self, Earray):
@@ -219,7 +220,7 @@ class _MPI_Parallel_Tempering(object):
         ptiter = 0
         while (ptiter < self.max_ptiter):
             if self.verbose:
-                print "processor {0} iteration {1}".format(self.rank,ptiter)
+                print("processor {0} iteration {1}".format(self.rank,ptiter))
             self.one_iteration()
             ptiter += 1
             #assure that data are not thrown away since last print
@@ -231,7 +232,7 @@ class _MPI_Parallel_Tempering(object):
                     self._close_flush()
                 else:
                     self.max_ptiter = new_max_ptiter
-        print 'process {0} terminated'.format(self.rank)
+        print('process {0} terminated'.format(self.rank))
     
     def _scatter_data(self, in_send_array, adim, dtype='d'):
         """Method to scatter data in equal ordered chunks among replica (it relies on the rank of the replica)
@@ -433,7 +434,7 @@ class _MPI_Parallel_Tempering(object):
         Earray = self._gather_energies(self.energy)
         if self.verbose:
             if Earray is not None:
-                print "Earray", Earray
+                print("Earray", Earray)
         #find exchange pattern (list of exchange buddies)
         exchange_pattern = self._find_exchange_buddy(Earray)
         #now scatter the exchange pattern so that everybody knows who their buddy is
