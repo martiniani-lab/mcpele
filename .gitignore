@@ -12,3 +12,5 @@ cpp_tests/gtest/
 cythonize.dat
 CMakeLists.txt
 mcpele/version.py
+**/.cache
+.cache
