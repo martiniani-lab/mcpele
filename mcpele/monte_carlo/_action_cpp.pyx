@@ -9,6 +9,11 @@ import sys
 
 from pele.potentials._pele cimport array_wrap_np
 
+from _pele_mc cimport cppAction,_Cdef_Action, shared_ptr, cppAcceptTest
+from _accept_test_cpp cimport cppCloudTest
+
+cimport _pele_mc
+
 #===============================================================================
 # Record Energy Histogram
 #===============================================================================        
@@ -397,33 +402,42 @@ class RecordDisplacementPerParticleTimeseries(_Cdef_RecordDisplacementPerParticl
         dimensionality of the space (dimensionality of box)
     """
 
-cdef class _Cdef_RecordCoordsTimeseries(_Cdef_Action):
+cdef class _Cdef_RecordVectorTimeseries(_Cdef_Action):
     cdef cppRecordVectorTimeseries* newptr
-    cdef cppRecordCoordsTimeseries* newptr2
-    def __cinit__(self, ndof, record_every=1, eqsteps=0):
-        self.thisptr = shared_ptr[cppAction](<cppAction*> new cppRecordCoordsTimeseries(ndof, record_every, eqsteps))
-        self.newptr = <cppRecordVectorTimeseries*> self.thisptr.get()
-        self.newptr2 = <cppRecordCoordsTimeseries*> self.thisptr.get()
-        
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def get_time_series(self):
         """get a trajectory
-        
+
         Returns
         -------
         numpy.array
             deque of arrays
         """
         cdef deque[_pele.Array[double]] dq = self.newptr.get_time_series()
-        cdef double *seriesdata
-        cdef np.ndarray[double, ndim=2, mode="c"] series = np.zeros((dq.size(), dq[0].size()))
+        cdef double * seriesdata
+        cdef np.ndarray[double, ndim = 2, mode = "c"] series = np.zeros((dq.size(), dq[0].size()))
         cdef size_t i, j
         for i in xrange(dq.size()):
             seriesdata = dq[i].data()
             for j in xrange(dq[i].size()):
                 series[i][j] = seriesdata[j]
         return series
+
+    def clear(self):
+        """clear time series container
+
+        deletes the entries in the c++ container
+        """
+        self.newptr.clear()
+
+cdef class _Cdef_RecordCoordsTimeseries(_Cdef_RecordVectorTimeseries):
+    cdef cppRecordCoordsTimeseries* newptr2
+    def __cinit__(self, ndof, record_every=1, eqsteps=0):
+        self.thisptr = shared_ptr[cppAction](<cppAction*> new cppRecordCoordsTimeseries(ndof, record_every, eqsteps))
+        self.newptr = <cppRecordVectorTimeseries*> self.thisptr.get()
+        self.newptr2 = <cppRecordCoordsTimeseries*> self.thisptr.get()
     
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -460,13 +474,6 @@ cdef class _Cdef_RecordCoordsTimeseries(_Cdef_Action):
         count = self.newptr2.get_count()
         return count
     
-    def clear(self):
-        """clear time series container
-        
-        deletes the entries in the c++ container
-        """
-        self.newptr.clear()
-    
 class RecordCoordsTimeseries(_Cdef_RecordCoordsTimeseries):
     """Record a trajectory of the system coordinates
        
@@ -481,4 +488,68 @@ class RecordCoordsTimeseries(_Cdef_RecordCoordsTimeseries):
         interval every which the coordinates are recorded
     eqsteps : int
         number of equilibration steps to skip when computing averages
+    """
+
+cdef class _Cdef_RecordCloudVectorTimeseries(_Cdef_Action):
+    cdef cppRecordCloudVectorTimeseries * newptr
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def get_time_series(self):
+        """get a trajectory
+
+        Returns
+        -------
+        numpy.array
+            deque of arrays
+        """
+        cdef deque[_pele.Array[double]] dq = self.newptr.get_time_series()
+        cdef double * seriesdata
+        cdef np.ndarray[double, ndim = 2, mode = "c"] series = np.zeros((dq.size(), dq[0].size()))
+        cdef size_t i, j
+        for i in xrange(dq.size()):
+            seriesdata = dq[i].data()
+            for j in xrange(dq[i].size()):
+                series[i][j] = seriesdata[j]
+        return series
+
+    def clear(self):
+        """clear time series container
+
+        deletes the entries in the c++ container
+        """
+        self.newptr.clear()
+
+cdef class _Cdef_RecordCloudDropsTimeseries(_Cdef_RecordCloudVectorTimeseries):
+    cdef cppRecordCloudDropsTimeseries * newptr2
+
+    def __cinit__(self, origin, record_every=1, eqsteps=0):
+        cdef _pele.Array[double] origin_ = array_wrap_np(origin)
+        self.thisptr = shared_ptr[cppAction]( < cppAction * > new cppRecordCloudDropsTimeseries(origin_, record_every, eqsteps))
+        self.newptr = < cppRecordCloudVectorTimeseries * > self.thisptr.get()
+        self.newptr2 = < cppRecordCloudDropsTimeseries * > self.thisptr.get()
+
+class RecordCloudDropsTimeseries(_Cdef_RecordCloudDropsTimeseries):
+    """
+    Python interface for RecordCloudDropsTimeseries
+    """
+
+#==============
+# RecordCloudR2
+#==============
+
+cdef class _Cdef_RecordCloudR2(_Cdef_Action):
+    cdef cppRecordCloudR2* newptr
+    def __cinit__(self, eqsteps, origin):
+        cdef _pele.Array[double] origin_ = array_wrap_np(origin)
+        self.thisptr = shared_ptr[cppAction](<cppAction*> new cppRecordCloudR2(eqsteps, origin_))
+        self.newptr = <cppRecordCloudR2*> self.thisptr.get()
+    def get_mean(self):
+        return self.newptr.get_mean_r2()
+    def get_variance(self):
+        return self.newptr.get_var_r2()
+        
+class RecordCloudR2(_Cdef_RecordCloudR2):
+    """
+    Python interface for above RecordCloudR2
     """

@@ -1,7 +1,7 @@
 cimport pele.potentials._pele as _pele
 cimport pele.optimize._pele_opt as _pele_opt
-#from pele.potentials._pele cimport array_wrap_np
-from _pele_mc cimport cppAction,_Cdef_Action, shared_ptr
+from pele.potentials._pele cimport array_wrap_np
+from _pele_mc cimport cppAction,_Cdef_Action, shared_ptr, cppAcceptTest
 from libcpp cimport bool as cbool
 from libcpp.deque cimport deque
 
@@ -14,7 +14,7 @@ cdef extern from *:
     ctypedef int INT2 "2"    # a fake type
     ctypedef int INT3 "3"    # a fake type
 
-cdef extern from "mcpele/record_energy_histogram.h" namespace "mcpele":
+cdef extern from "mcpele/record_energy_histogram.h" namespace "mcpele": 
     cdef cppclass cppRecordEnergyHistogram "mcpele::RecordEnergyHistogram":
         cppRecordEnergyHistogram(double, double, double, size_t) except +
         _pele.Array[double] get_histogram() except +
@@ -39,16 +39,21 @@ cdef extern from "mcpele/record_scalar_timeseries.h" namespace "mcpele":
         void clear() except +
         cbool moving_average_is_stable(size_t, double) except +
 
+cdef extern from "mcpele/record_scalar_timeseries.h" namespace "mcpele":
+    cdef cppclass cppRecordCloudScalarTimeseries "mcpele::RecordCloudScalarTimeseries":
+        _pele.Array[double] get_time_series() except +
+        void clear() except +
+
 cdef extern from "mcpele/record_energy_timeseries.h" namespace "mcpele":
     cdef cppclass cppRecordEnergyTimeseries "mcpele::RecordEnergyTimeseries":
         cppRecordEnergyTimeseries(size_t, size_t) except +
-
+        
 cdef extern from "mcpele/record_lowest_evalue_timeseries.h" namespace "mcpele":
     cdef cppclass cppRecordLowestEValueTimeseries "mcpele::RecordLowestEValueTimeseries":
         cppRecordLowestEValueTimeseries(size_t, size_t,
             shared_ptr[_pele.cBasePotential], size_t, _pele.Array[double]
             , size_t) except +
-
+    
 cdef extern from "mcpele/record_displacement_per_particle_timeseries.h" namespace "mcpele":
     cdef cppclass cppRecordDisplacementPerParticleTimeseries "mcpele::RecordDisplacementPerParticleTimeseries":
         cppRecordDisplacementPerParticleTimeseries(size_t, size_t,
@@ -56,6 +61,10 @@ cdef extern from "mcpele/record_displacement_per_particle_timeseries.h" namespac
 
 cdef extern from "mcpele/record_vector_timeseries.h" namespace "mcpele":
     cdef cppclass cppRecordVectorTimeseries "mcpele::RecordVectorTimeseries":
+        deque[_pele.Array[double]] get_time_series() except +
+        void clear() except +
+        size_t get_record_every() except +
+    cdef cppclass cppRecordCloudVectorTimeseries "mcpele::RecordCloudVectorTimeseries":
         deque[_pele.Array[double]] get_time_series() except +
         void clear() except +
         size_t get_record_every() except +
@@ -67,3 +76,13 @@ cdef extern from "mcpele/record_coords_timeseries.h" namespace "mcpele":
         _pele.Array[double] get_mean2_coordinate_vector() except +
         _pele.Array[double] get_variance_coordinate_vector() except +
         size_t get_count() except +
+
+cdef extern from "mcpele/record_cloud_drops_timeseries.h" namespace "mcpele":
+    cdef cppclass cppRecordCloudDropsTimeseries "mcpele::RecordCloudDropsTimeseries":
+        cppRecordCloudDropsTimeseries(_pele.Array[double], size_t, size_t) except +
+        
+cdef extern from "mcpele/record_cloud_r2.h" namespace "mcpele":
+    cdef cppclass cppRecordCloudR2 "mcpele::RecordCloudR2":
+        cppRecordCloudR2(size_t, _pele.Array[double]) except+
+        double get_mean_r2() except+
+        double get_var_r2() except+

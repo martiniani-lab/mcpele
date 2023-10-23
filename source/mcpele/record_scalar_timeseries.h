@@ -2,6 +2,7 @@
 #define _MCPELE_RECORD_SCALAR_TIMESERIES_H__
 
 #include "mc.h"
+#include "cloud_action.h"
 
 namespace mcpele {
 
@@ -28,6 +29,28 @@ public:
     }
     void clear() { m_time_series.clear(); }
 };
+
+class RecordCloudScalarTimeseries : public CloudAction{
+protected:
+    const size_t m_record_every;
+    std::vector<double> m_time_series;
+    void m_record_scalar_value(const double input)
+    {
+        m_time_series.push_back(input);
+    }
+public:
+    RecordCloudScalarTimeseries(const size_t niter, const size_t record_every);
+    virtual ~RecordCloudScalarTimeseries(){}
+    virtual void record_cloud_action(const Cloud& c, MC* mc);
+    virtual double do_action(const std::shared_ptr<Drop> drop, MC* mc)=0;
+    pele::Array<double> get_time_series()
+    {
+        m_time_series.shrink_to_fit();
+        return pele::Array<double>(m_time_series).copy();
+    }
+    void clear() { m_time_series.clear(); }
+};
+
 
 } // namespace mcpele
 

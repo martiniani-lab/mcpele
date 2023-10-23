@@ -22,4 +22,21 @@ void RecordScalarTimeseries::action(Array<double> &coords, double energy, bool a
     }
 }
 
+RecordCloudScalarTimeseries::RecordCloudScalarTimeseries(const size_t niter, const size_t record_every)
+    : m_record_every(record_every)
+{
+    if (record_every == 0) {
+        throw std::runtime_error("RecordCloudScalarTimeseries: record_every expected to be at least 1");
+    }
+    m_time_series.reserve(niter / record_every);
+}
+
+void RecordCloudScalarTimeseries::record_cloud_action(const Cloud& c, MC* mc){
+    const size_t counter = mc->get_iterations_count();
+    if (counter % m_record_every == 0) {
+        double weighted_average = get_cloud_weighted_average(c, mc);
+        m_record_scalar_value(weighted_average);
+    }
+}
+
 } // namespace mcpele

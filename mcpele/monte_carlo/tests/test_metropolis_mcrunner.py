@@ -1,5 +1,4 @@
 from __future__ import division
-from __future__ import print_function
 import numpy as np
 from pele.potentials import Harmonic
 from mcpele.monte_carlo import Metropolis_MCrunner
@@ -58,7 +57,7 @@ class TestMetropolisGlobal(unittest.TestCase):
                                            bdim=self.bdim, seeds=self.seeds)
         mcrunner.run()
                         
-        print("3D com")
+        print "3D com"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -72,7 +71,7 @@ class TestMetropolisGlobal(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = (self.natoms-1)*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
     
@@ -82,7 +81,7 @@ class TestMetropolisGlobal(unittest.TestCase):
         self.origin = np.zeros(self.ndim)
         potential = Harmonic(self.origin, self.k, bdim=self.bdim, com=False)
         
-        print("3D")
+        print "3D"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -96,7 +95,7 @@ class TestMetropolisGlobal(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = self.natoms*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
     
@@ -107,7 +106,7 @@ class TestMetropolisGlobal(unittest.TestCase):
         potential = Harmonic(self.origin,self.k, bdim=self.bdim,com=True)
         #self.start_coords = vector_random_uniform_hypersphere(self.ndim) * np.sqrt(2*self.Emax) #coordinates sampled from Pow(ndim)
                         
-        print("2D com")
+        print "2D com"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -121,7 +120,7 @@ class TestMetropolisGlobal(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = (self.natoms-1)*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
     
@@ -131,7 +130,7 @@ class TestMetropolisGlobal(unittest.TestCase):
         self.origin = np.zeros(self.ndim)
         self.potential = Harmonic(self.origin, self.k, bdim=self.bdim, com=False)
                         
-        print("2D")
+        print "2D"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(self.potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -145,7 +144,7 @@ class TestMetropolisGlobal(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = self.natoms*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
             
@@ -203,7 +202,7 @@ class TestMetropolisSingle(unittest.TestCase):
                                            bdim=self.bdim)
         mcrunner.run()
                         
-        print("3D com")
+        print "3D com"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -217,7 +216,7 @@ class TestMetropolisSingle(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = (self.natoms-1)*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
     
@@ -227,7 +226,7 @@ class TestMetropolisSingle(unittest.TestCase):
         self.origin = np.zeros(self.ndim)
         potential = Harmonic(self.origin, self.k, bdim=self.bdim, com=False)
         
-        print("3D")
+        print "3D"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -241,7 +240,7 @@ class TestMetropolisSingle(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = self.natoms*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
     
@@ -252,7 +251,7 @@ class TestMetropolisSingle(unittest.TestCase):
         potential = Harmonic(self.origin,self.k, bdim=self.bdim,com=True)
         #self.start_coords = vector_random_uniform_hypersphere(self.ndim) * np.sqrt(2*self.Emax) #coordinates sampled from Pow(ndim)
                         
-        print("2D com")
+        print "2D com"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -266,7 +265,7 @@ class TestMetropolisSingle(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = (self.natoms-1)*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
     
@@ -276,7 +275,7 @@ class TestMetropolisSingle(unittest.TestCase):
         self.origin = np.zeros(self.ndim)
         self.potential = Harmonic(self.origin, self.k, bdim=self.bdim, com=False)
                         
-        print("2D")
+        print "2D"
         for T in self.temperatures:
                         
             mcrunner = Metropolis_MCrunner(self.potential, self.origin, T, self.stepsize, self.niter, hEmax = 100, 
@@ -290,7 +289,7 @@ class TestMetropolisSingle(unittest.TestCase):
             cv =  variance/(T*T)
             cv_true = self.natoms*self.bdim/2.0
             
-            print(cv, cv_true)
+            print cv, cv_true
             
             self.assertLess(abs(cv-cv_true),self.tolerance,'failed for temperature {}, cv = {}'.format(T,cv))
             

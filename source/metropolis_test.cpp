@@ -13,7 +13,7 @@ MetropolisTest::MetropolisTest(const size_t rseed)
       m_distribution(0.0, 1.0)
 {
     #ifdef DEBUG
-        std::cout << "seed Metropolis:" << m_seed << "\n";
+        std::cout << "seed Metropolis:" << _seed << "\n";
         //std::chrono::system_clock::now().time_since_epoch().count()
     #endif
 }
@@ -22,11 +22,13 @@ bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy,
         Array<double>& old_coords, double old_energy, double temperature,
         MC * mc)
 {
-    double w, rand;
+    double rand;
+    double w;
+    double wcomp;
     bool success = true;
-    double dE = trial_energy - old_energy;
-    if (dE > 0.){
-        w = exp(-dE / temperature);
+    wcomp = (trial_energy - old_energy) / temperature;
+    w = exp(-wcomp);
+    if (w < 1.0) {
         rand = m_distribution(m_generator);
         if (rand > w) {
             success = false;

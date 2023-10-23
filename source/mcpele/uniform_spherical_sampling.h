@@ -8,7 +8,7 @@ namespace mcpele {
 /**
  * Sample points uniformly at random within an N-ball.
  * See also: http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
- */
+ */    
 
 class UniformSphericalSampling : public TakeStep {
 protected:
@@ -57,7 +57,7 @@ public:
         }
     }
 };
-
+    
 } // namespace mcpele
 
 #endif // #ifndef _MCPELE_UNIFORM_SPHERICAL_SAMPLING_H__

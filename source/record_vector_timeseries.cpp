@@ -21,4 +21,21 @@ void RecordVectorTimeseries::action(Array<double> &coords, double energy, bool a
     }
 }
 
+RecordCloudVectorTimeseries::RecordCloudVectorTimeseries(const size_t record_every, const size_t eqsteps)
+    : m_record_every(record_every),
+      m_eqsteps(eqsteps)
+{
+    if (record_every == 0) {
+        throw std::runtime_error("RecordCloudVectorTimeseries: record_every expected to be at least 1");
+    }
+}
+
+void RecordCloudVectorTimeseries::record_cloud_action(const Cloud& c, MC* mc)
+{
+    const size_t counter = mc->get_iterations_count();
+    if (counter % m_record_every == 0 && counter > m_eqsteps) {
+        m_record_vector_value(this->get_recorded_vector(c, mc));
+    }
+}
+
 } // namespace mcpele

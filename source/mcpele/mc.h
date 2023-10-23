@@ -64,8 +64,6 @@ public:
             pele::Array<double>&, const double, const bool, MC*) {}
     virtual void increase_acceptance(const double) {}
     virtual void decrease_acceptance(const double) {}
-    virtual const std::vector<long> get_changed_atoms() const { return std::vector<long>(); }
-    virtual const std::vector<double> get_changed_coords_old() const { return std::vector<double>(); }
 };
 
 /**
@@ -100,7 +98,7 @@ protected:
     size_t m_accept_count;
     size_t m_E_reject_count;
     size_t m_conf_reject_count;
-    bool m_success, m_last_success;
+    bool m_success;
     /*nitercount is the cumulative count, it does not get reset at the end of run*/
     bool m_print_progress;
 public:
@@ -128,6 +126,7 @@ public:
     void add_late_conf_test(std::shared_ptr<ConfTest> conf_test) { m_late_conf_tests.push_back(conf_test); }
     void set_takestep(std::shared_ptr<TakeStep> takestep) { m_take_step = takestep; }
     std::shared_ptr<TakeStep> get_takestep() const { return m_take_step; }
+    const std::vector<std::shared_ptr<AcceptTest> >& display_accept_tests() const { return m_accept_tests; }
     void set_coordinates(pele::Array<double>& coords, double energy);
     double get_energy() const { return m_energy; }
     void reset_energy();
@@ -152,27 +151,6 @@ public:
     void set_print_progress(const bool input) { m_print_progress = input; }
     void set_print_progress() { set_print_progress(true); }
     bool get_success() const { return m_success; }
-    bool get_last_success() const { return m_last_success; }
-    pele::Array<size_t> get_counters() const
-    {
-        pele::Array<size_t> counters(5);
-        counters[0] = m_nitercount;
-        counters[1] = m_accept_count;
-        counters[2] = m_E_reject_count;
-        counters[3] = m_conf_reject_count;
-        counters[4] = m_neval;
-        return counters;
-    }
-    void set_counters(pele::Array<size_t> const & counters)
-    {
-        m_nitercount = counters[0];
-        m_accept_count = counters[1];
-        m_E_reject_count = counters[2];
-        m_conf_reject_count = counters[3];
-        m_neval = counters[4];
-    }
-    const std::vector<long> get_changed_atoms() const { return m_take_step->get_changed_atoms(); }
-    const std::vector<double> get_changed_coords_old() const { return m_take_step->get_changed_coords_old(); }
     /**
      * this will trigger premature exit from the MC run loop
      */
@@ -180,15 +158,15 @@ public:
     void enable_input_warnings() { m_enable_input_warnings = true; }
     void disable_input_warnings() { m_enable_input_warnings = false; }
 protected:
-    inline double compute_energy(pele::Array<double> & x)
+    inline double compute_energy(pele::Array<double> x)
     {
         ++m_neval;
         return m_potential->get_energy(x);
     }
-    bool do_conf_tests(pele::Array<double> & x);
-    bool do_accept_tests(pele::Array<double> & xtrial, double etrial, pele::Array<double> & xold, double eold);
-    bool do_late_conf_tests(pele::Array<double> & x);
-    void do_actions(pele::Array<double> & x, double energy, bool success);
+    bool do_conf_tests(pele::Array<double> x);
+    bool do_accept_tests(pele::Array<double> xtrial, double etrial, pele::Array<double> xold, double eold);
+    bool do_late_conf_tests(pele::Array<double> x);
+    void do_actions(pele::Array<double> x, double energy, bool success);
     void take_steps();
 };
 
