@@ -6,6 +6,9 @@ a ball of radius R contained in the cube, we determine Pi.
 """
 from __future__ import division
 from __future__ import print_function
+from builtins import zip
+from builtins import range
+from builtins import object
 import numpy as np
 import copy
 from scipy.special import gamma
@@ -47,7 +50,7 @@ if __name__ == "__main__":
     nsamples = 1e5
     ndim_ = []
     res = []
-    for ndim in xrange(2, 16):
+    for ndim in range(2, 16):
         print("computing pi in {} dimensions".format(ndim))
         c = ComputePi(ndim=ndim, nsamples=nsamples)
         res.append(c.pi)

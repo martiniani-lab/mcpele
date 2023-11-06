@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import object
 import glob
 import os
 import sys
@@ -40,7 +41,7 @@ generate_cython()
 # compile fortran extension modules
 #
 
-class ModuleList:
+class ModuleList(object):
     def __init__(self, **kwargs):
         self.module_list = []
         self.kwargs = kwargs

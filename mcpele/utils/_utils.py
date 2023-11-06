@@ -1,6 +1,8 @@
 from __future__ import division
+from builtins import range
 import numpy as np
 import pandas as pd
+
 
 def write_2d_array_to_hf5(array, key, path):
     """
@@ -8,11 +10,12 @@ def write_2d_array_to_hf5(array, key, path):
     use this to dump a trajectory to a database from python
     """
     assert array.ndim == 2
-    nind , ncol = array.shape
-    ind = [i for i in xrange(nind)]
-    col = [i for i in xrange(ncol)]
+    nind, ncol = array.shape
+    ind = [i for i in range(nind)]
+    col = [i for i in range(ncol)]
     df = pd.DataFrame(np.array(array), index=ind, columns=col)
     df.to_hdf(path, key)
+
 
 def read_hf5_to_2d_array(path, key):
     """

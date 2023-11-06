@@ -1,5 +1,6 @@
 from __future__ import division
 from __future__ import print_function
+from builtins import object
 import numpy as np
 from scipy.special import gamma
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ class MC(_BaseMCRunner):
     def set_control(self, temp):
         self.set_temperature(temp)
 
-class ComputeGR():
+class ComputeGR(object):
     def __init__(self, boxdim=2, nr_particles=100, hard_phi=0.4,
                  nr_steps=1e6, epsilon=1, alpha=0.1, verbose=False):
         # Settings.
