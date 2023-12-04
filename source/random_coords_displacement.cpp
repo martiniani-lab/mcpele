@@ -38,7 +38,6 @@ void RandomCoordsDisplacementAll::displace(pele::Array<double> &coords,
   if (m_changed_coords_old.size() != 0) {
     std::copy(coords.begin(), coords.end(), m_changed_coords_old.begin());
   }
-
   for (size_t i = 0; i < coords.size(); ++i) {
     double rand = m_real_distribution(m_generator);
     coords[i] += (0.5 - rand) * m_stepsize;
@@ -47,7 +46,6 @@ void RandomCoordsDisplacementAll::displace(pele::Array<double> &coords,
 }
 
 /*RandomCoordsDisplacementSingle*/
-
 RandomCoordsDisplacementSingle::RandomCoordsDisplacementSingle(
     const size_t rseed, const size_t nparticles, const size_t ndim,
     const double stepsize, const double max_stepsize)
