@@ -23,3 +23,8 @@ cpp_tests/source/libmcpele_lib.a
 .cache
 **/test_main
 **/compile_commands.json
+cmake-build-debug/
+cmake-build-release/
+.idea/
+mcpele.egg-info/
+UNKNOWN.egg-info/
