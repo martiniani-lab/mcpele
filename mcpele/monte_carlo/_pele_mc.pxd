@@ -76,19 +76,15 @@ cdef extern from "mcpele/success_container.h":
 #===============================================================================
 
 cdef extern from "mcpele/mc.h" namespace "mcpele":
-    cdef cppclass cppMC "mcpele::MC":
-        cppMC(shared_ptr[_pele.cBasePotential], _pele.Array[double]&, double) except +
+    cdef cppclass cppMCBase "mcpele::MCBase":
+        cppMCBase(shared_ptr[_pele.cBasePotential], _pele.Array[double]&, double) except +
         void one_iteration() except +
         void run(size_t) except +
+        void add_action(shared_ptr[cppAction]) except +
         void set_temperature(double) except +
         double get_temperature() except +
         void set_stepsize(double) except +
         void set_use_energy_change(cbool) except +
-        void add_action(shared_ptr[cppAction]) except +
-        void add_accept_test(shared_ptr[cppAcceptTest]) except +
-        void add_conf_test(shared_ptr[cppConfTest]) except +
-        void add_late_conf_test(shared_ptr[cppConfTest]) except +
-        void set_takestep(shared_ptr[cppTakeStep]) except +
         void set_coordinates(_pele.Array[double]&, double) except +
         void reset_energy() except +
         double get_energy() except +
@@ -96,8 +92,6 @@ cdef extern from "mcpele/mc.h" namespace "mcpele":
         _pele.Array[double] get_trial_coords() except +
         double get_accepted_fraction() except +
         size_t get_iterations_count() except +
-        double get_conf_rejection_fraction() except +
-        double get_E_rejection_fraction() except +
         size_t get_neval() except +
         double get_norm_coords() except +
         void set_report_steps(size_t) except +
@@ -106,11 +100,21 @@ cdef extern from "mcpele/mc.h" namespace "mcpele":
         void enable_input_warnings() except+
         void disable_input_warnings() except +
         cbool get_success() except +
-        _pele.Array[size_t] get_counters() except +
-        void set_counters(_pele.Array[size_t]) except +
         cppSuccessAccumulator get_success_accumulator() except +
 
-cdef class _Cdef_BaseMC(object):
+cdef class _Cdef_BaseMCBase(object):
     """This class is the python interface for the c++ mcpele::MC base class implementation
     """
-    cdef shared_ptr[cppMC] thisptr
+    cdef shared_ptr[cppMCBase] baseptr
+
+cdef extern from "mcpele/mc.h" namespace "mcpele":
+    cdef cppclass cppMC "mcpele::MC"(cppMCBase):
+        cppMC(shared_ptr[_pele.cBasePotential], _pele.Array[double]&, double) except +
+        void add_accept_test(shared_ptr[cppAcceptTest]) except +
+        void add_conf_test(shared_ptr[cppConfTest]) except +
+        void add_late_conf_test(shared_ptr[cppConfTest]) except +
+        void set_takestep(shared_ptr[cppTakeStep]) except +
+        double get_conf_rejection_fraction() except +
+        double get_E_rejection_fraction() except +
+        _pele.Array[size_t] get_counters() except +
+        void set_counters(_pele.Array[size_t]) except +
