@@ -16,10 +16,12 @@ class GMCTakeStep final : public TakeStep {
   size_t m_seed;
   std::mt19937_64 m_generator;
   std::normal_distribution<> m_distribution;
+  std::uniform_real_distribution<> m_timestep_distribution;
+  const bool m_use_random_timestep;
 
  public:
   GMCTakeStep(double timestep, size_t nparticles, size_t ndim, size_t rseed,
-              double max_timestep = 0.0);
+              double max_timestep = 0.0, bool use_random_timestep = false);
   ~GMCTakeStep() override = default;
   void displace(pele::Array<double> &coords, MCBase *mc) override;
   void increase_acceptance(const double factor) override {

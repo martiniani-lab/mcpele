@@ -4,7 +4,7 @@ namespace mcpele {
 
 GMCTakeStep::GMCTakeStep(const double timestep, const size_t nparticles,
                          const size_t ndim, const size_t rseed,
-                         const double max_timestep)
+                         const double max_timestep, bool use_random_timestep)
     : m_velocity(nparticles * ndim),
       m_timestep(timestep),
       m_max_timestep(max_timestep),
@@ -12,7 +12,9 @@ GMCTakeStep::GMCTakeStep(const double timestep, const size_t nparticles,
       m_changed_coords_old(nparticles * ndim),
       m_seed(rseed),
       m_generator(rseed),
-      m_distribution(0.0, 1.0) {
+      m_distribution(0.0, 1.0),
+      m_timestep_distribution(0.0, timestep),
+      m_use_random_timestep(use_random_timestep) {
   if (timestep <= 0.0) {
     throw std::runtime_error(
         "GMCTakeStep::GMCTakeStep: initial timestep must be positive, got " +
@@ -33,13 +35,15 @@ GMCTakeStep::GMCTakeStep(const double timestep, const size_t nparticles,
   resample_velocity();
 }
 
-void GMCTakeStep::displace(pele::Array<double>& coords, MCBase *mc) {
+void GMCTakeStep::displace(pele::Array<double>& coords, MCBase* mc) {
   assert(coords.size() == m_changed_coords_old.size());
   if (m_changed_coords_old.size() != 0) {
     std::copy(coords.begin(), coords.end(), m_changed_coords_old.begin());
   }
+  const auto timestep =
+      m_use_random_timestep ? m_timestep_distribution(m_generator) : m_timestep;
   for (size_t i = 0; i < coords.size(); ++i) {
-    coords[i] += m_timestep * m_velocity[i];
+    coords[i] += timestep * m_velocity[i];
   }
 }
 

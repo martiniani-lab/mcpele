@@ -12,10 +12,10 @@ from mcpele.galilean_monte_carlo._gmc_cpp import _Cdef_GMCConfTest
 class GalileanMonteCarloRunner(_BaseGMCRunner):
     def __init__(self, potential: BasePotential, coords: np.ndarray, temperature: float, pniter: int, timestep: float,
                  nparticles: int, ndim: int, resample_velocity_steps: int = 0, max_timestep: float = 0.0,
-                 conftests: Sequence[_Cdef_GMCConfTest] = (), late_conftests: Sequence[_Cdef_GMCConfTest] = (),
-                 actions: Sequence[_Cdef_Action] = (), seeds: Optional[dict[str, int]] = None,
-                 adaptive_iterations: int = 1000, adaptive_interval: int = 100, adaptive_factor: float = 0.9,
-                 adaptive_acceptance=0.5) -> None:
+                 use_random_timestep: bool = False, conftests: Sequence[_Cdef_GMCConfTest] = (),
+                 late_conftests: Sequence[_Cdef_GMCConfTest] = (), actions: Sequence[_Cdef_Action] = (),
+                 seeds: Optional[dict[str, int]] = None, adaptive_iterations: int = 1000, adaptive_interval: int = 100,
+                 adaptive_factor: float = 0.9, adaptive_acceptance=0.5) -> None:
         if seeds is not None:
             if "takestep" not in seeds or "metropolis" not in seeds:
                 raise ValueError("Seeds must contain takestep and metropolis keys.")
@@ -27,7 +27,7 @@ class GalileanMonteCarloRunner(_BaseGMCRunner):
                 metropolis=rng.integers(low=0, high=i32max),
             )
         super().__init__(potential, coords, temperature, pniter, timestep, nparticles, ndim, seeds["takestep"],
-                         resample_velocity_steps, max_timestep, adaptive_interval, adaptive_factor,
+                         resample_velocity_steps, max_timestep, use_random_timestep, adaptive_interval, adaptive_factor,
                          adaptive_acceptance, adaptive_acceptance)
         self.set_report_steps(adaptive_iterations)  # set number of iterations for which steps are adapted
         self._conftests = conftests
@@ -61,9 +61,9 @@ if __name__ == '__main__':
     gmc = GalileanMonteCarloRunner(
         potential=NullPotential(), coords=initial_coords, temperature=1.0, pniter=iterations, timestep=0.1,
         nparticles=1, ndim=len(initial_coords), resample_velocity_steps=resample_velocity_steps, max_timestep=0.0,
-        conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
-        seeds={"metropolis": 1, "takestep": 10}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
-        adaptive_acceptance=0.5)
+        use_random_timestep=False, conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),),
+        actions=(action,), seeds={"metropolis": 1, "takestep": 10}, adaptive_iterations=0, adaptive_interval=100,
+        adaptive_factor=0.9, adaptive_acceptance=0.5)
     gmc.run()
     timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
     plt.figure()
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     gmc = GalileanMonteCarloRunner(
         potential=Harmonic(np.array([0.0, 0.0]), 15.0, bdim=2, com=False), coords=initial_coords, temperature=1.0,
         pniter=iterations, timestep=0.1, nparticles=1, ndim=len(initial_coords),
-        resample_velocity_steps=resample_velocity_steps, max_timestep=0.0,
+        resample_velocity_steps=resample_velocity_steps, max_timestep=0.0, use_random_timestep=False,
         conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
         seeds={"metropolis": 1, "takestep": 10}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
         adaptive_acceptance=0.5)

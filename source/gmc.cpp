@@ -6,13 +6,14 @@ GMC::GMC(std::shared_ptr<pele::BasePotential> potential,
          const pele::Array<double>& coords, const double temperature,
          const double timestep, const size_t nparticles, const size_t ndim,
          const size_t rseed, const size_t resample_velocity_steps,
-         const double max_timestep, const size_t adaptive_interval,
-         const double adaptive_factor,
+         const double max_timestep, const bool use_random_timestep,
+         const size_t adaptive_interval, const double adaptive_factor,
          const double adaptive_min_acceptance_ratio,
          const double adaptive_max_acceptance_ratio)
     : MCBase(std::move(potential), coords, temperature),
       m_take_step(std::make_shared<GMCTakeStep>(timestep, nparticles, ndim,
-                                                rseed, max_timestep)),
+                                                rseed, max_timestep,
+                                                use_random_timestep)),
       m_adaptive_step(std::make_shared<AdaptiveTakeStep>(
           m_take_step, adaptive_interval, adaptive_factor,
           adaptive_min_acceptance_ratio, adaptive_max_acceptance_ratio)),
@@ -40,7 +41,8 @@ bool GMC::check_configuration_short(pele::Array<double>& trial_coords) {
 }
 
 void GMC::one_iteration() {
-  // TODO: It should be possible to store information about a suceeding conf test from the past time step!
+  // TODO: It should be possible to store information about a suceeding conf
+  // test from the past time step!
   ++m_niter;
   ++m_nitercount;
 
@@ -159,9 +161,10 @@ void GMC::check_input() {
         "GMC::check_input: using energy change is not supported");
   }
   if (m_conf_tests.size() + m_late_conf_tests.size() == 0) {
-    throw std::runtime_error("GMC::check_input: there must be at least one "
-                             "(late) conf test that determines the gradient in "
-                             "a reflection of Galilean Monte Carlo");
+    throw std::runtime_error(
+        "GMC::check_input: there must be at least one "
+        "(late) conf test that determines the gradient in "
+        "a reflection of Galilean Monte Carlo");
   }
   if (m_enable_input_warnings) {
     if (m_conf_tests.size() == 0 && m_late_conf_tests.size() == 0) {

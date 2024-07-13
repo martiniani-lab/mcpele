@@ -19,11 +19,13 @@ cdef class _Cdef_GMC(_Cdef_MCBase):
     cdef public size_t rseed
     cdef public size_t resample_velocity_steps
     cdef public double max_timestep
+    cdef public cbool use_random_timestep
 
     def __init__(self, _pele.BasePotential potential, coords, double temperature, size_t pniter, double timestep,
                  size_t nparticles, size_t ndim, size_t rseed, size_t resample_velocity_steps = 0,
-                 double max_timestep = 0.0, size_t adaptive_interval = 100, double adaptive_factor = 0.9,
-                 double adaptive_min_acceptance_ratio = 0.2, double adaptive_max_acceptance_ratio = 0.5):
+                 double max_timestep = 0.0, cbool use_random_timestep = False, size_t adaptive_interval = 100,
+                 double adaptive_factor = 0.9, double adaptive_min_acceptance_ratio = 0.2,
+                 double adaptive_max_acceptance_ratio = 0.5):
         cdef np.ndarray[double, ndim=1] cstart_coords = np.array(coords, dtype=float)
         self.potential = potential
         self.start_coords = cstart_coords
@@ -35,6 +37,7 @@ cdef class _Cdef_GMC(_Cdef_MCBase):
         self.rseed = rseed
         self.resample_velocity_steps = resample_velocity_steps
         self.max_timestep = max_timestep
+        self.use_random_timestep = use_random_timestep
         self.adaptive_interval = adaptive_interval
         self.adaptive_factor = adaptive_factor
         self.adaptive_min_acceptance_ratio = adaptive_min_acceptance_ratio
@@ -43,8 +46,8 @@ cdef class _Cdef_GMC(_Cdef_MCBase):
             <cppMCBase *> new cppGMC(self.potential.thisptr,
                                      _pele.Array[double](<double *> cstart_coords.data, cstart_coords.size),
                                      self.temperature, self.timestep, self.nparticles, self.ndim, self.rseed,
-                                     self.resample_velocity_steps, self.max_timestep, self.adaptive_interval,
-                                     self.adaptive_factor, self.adaptive_min_acceptance_ratio,
+                                     self.resample_velocity_steps, self.max_timestep, self.use_random_timestep,
+                                     self.adaptive_interval, self.adaptive_factor, self.adaptive_min_acceptance_ratio,
                                      self.adaptive_max_acceptance_ratio))
         self.thisptr = <cppGMC *> self.baseptr.get()
 
@@ -60,10 +63,10 @@ cdef class _Cdef_GMC(_Cdef_MCBase):
 
 class _BaseGMCRunner(_Cdef_GMC, _BaseMCBaseRunner, ABC):
     def __init__(self, potential, coords, temperature, niter, timestep, nparticles, ndim, rseed,
-                 resample_velocity_steps = 0, max_timestep = 0.0, adaptive_interval = 100, adaptive_factor = 0.9,
-                 adaptive_min_acceptance_ratio = 0.2, adaptive_max_acceptance_ratio = 0.5):
+                 resample_velocity_steps = 0, max_timestep = 0.0, use_random_timestep = False, adaptive_interval = 100,
+                 adaptive_factor = 0.9, adaptive_min_acceptance_ratio = 0.2, adaptive_max_acceptance_ratio = 0.5):
         super().__init__(potential, coords, temperature, niter, timestep, nparticles, ndim, rseed,
-                         resample_velocity_steps, max_timestep, adaptive_interval, adaptive_factor,
+                         resample_velocity_steps, max_timestep, use_random_timestep, adaptive_interval, adaptive_factor,
                          adaptive_min_acceptance_ratio, adaptive_max_acceptance_ratio)
         # TODO: THIS FEELS WEIRD
         self.ndim = len(coords)

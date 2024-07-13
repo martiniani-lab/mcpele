@@ -66,8 +66,8 @@ class GMC final : public MCBase {
       const pele::Array<double> &coords, double temperature, double timestep,
       size_t nparticles, size_t ndim, size_t rseed,
       size_t resample_velocity_steps = 0, double max_timestep = 0.0,
-      size_t adaptive_interval = 100, double adaptive_factor = 0.9,
-      double adaptive_min_acceptance_ratio = 0.2,
+      bool use_random_timestep = false, size_t adaptive_interval = 100,
+      double adaptive_factor = 0.9, double adaptive_min_acceptance_ratio = 0.2,
       double adaptive_max_acceptance_ratio = 0.5);
   ~GMC() override = default;
   void one_iteration() override;
