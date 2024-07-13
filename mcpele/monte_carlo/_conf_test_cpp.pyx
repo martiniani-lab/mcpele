@@ -47,6 +47,15 @@ class CheckSphericalContainerConfig(_Cdef_CheckSphericalContainerConfig):
         radius of the spherical container, centered at **0**
     """
 
+cdef class _Cdef_CheckHypercubicContainerConfig(_Cdef_ConfTest):
+    cdef cppCheckHypercubicContainerConfig* newptr
+    def __cinit__(self, side_length):
+        self.thisptr = shared_ptr[cppConfTest](<cppConfTest*> new cppCheckHypercubicContainerConfig(side_length))
+        self.newptr = <cppCheckHypercubicContainerConfig*> self.thisptr.get()
+
+class CheckHypercubicContainerConfig(_Cdef_CheckHypercubicContainerConfig):
+    pass
+
 #===============================================================================
 # Union of configurational tests
 #===============================================================================

@@ -354,6 +354,7 @@ setup(
     packages=[
         "mcpele",
         "mcpele.monte_carlo",
+        "mcpele.galilean_monte_carlo",
         "mcpele.parallel_tempering",
         # add the test directories
         "mcpele.monte_carlo.tests",
@@ -375,6 +376,8 @@ cxx_files = [
     "mcpele/monte_carlo/_conf_test_cpp.cxx",
     "mcpele/monte_carlo/_action_cpp.cxx",
     "mcpele/monte_carlo/_nullpotential_cpp.cxx",
+    "mcpele/galilean_monte_carlo/_gmc_cpp.cxx",
+    "mcpele/galilean_monte_carlo/_gmc_conf_test_cpp.cxx"
 ]
 
 
