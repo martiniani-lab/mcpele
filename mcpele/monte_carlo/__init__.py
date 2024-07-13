@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from ._accept_test_cpp import MetropolisTest
 from ._conf_test_cpp import CheckSphericalContainer
 from ._conf_test_cpp import CheckSphericalContainerConfig
+from ._conf_test_cpp import CheckHypercubicContainerConfig
 from ._conf_test_cpp import ConfTestOR
 from ._takestep_cpp import RandomCoordsDisplacement
 from ._takestep_cpp import SampleGaussian
