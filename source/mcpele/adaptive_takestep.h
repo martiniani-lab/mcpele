@@ -21,13 +21,13 @@ class AdaptiveTakeStep : public TakeStep {
                    const double factor = 0.9,
                    const double min_acceptance_ratio = 0.2,
                    const double max_acceptance_ratio = 0.5);
-  void displace(pele::Array<double> &coords, MC *mc) {
+  void displace(pele::Array<double> &coords, MCBase *mc) {
     m_ts->displace(coords, mc);
     m_ts->set_current_step_name(mc, "Adaptive");
   }
   void report(pele::Array<double> &old_coords, const double old_energy,
               pele::Array<double> &new_coords, const double new_energy,
-              const bool success, MC *mc);
+              const bool success, MCBase *mc);
   double get_min_acceptance_ratio() const { return m_min_acceptance_ratio; }
   double get_max_acceptance_ratio() const { return m_max_acceptance_ratio; }
   pele::Array<size_t> get_counters() const {

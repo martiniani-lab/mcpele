@@ -19,11 +19,11 @@ class RecordCoordsTimeseries : public RecordVectorTimeseries {
   virtual ~RecordCoordsTimeseries() {}
   virtual pele::Array<double> get_recorded_vector(pele::Array<double> &coords,
                                                   const double energy,
-                                                  const bool accepted, MC *mc) {
+                                                  const bool accepted, MCBase *mc) {
     return coords;
   }
   virtual void action(pele::Array<double> &coords, double energy, bool accepted,
-                      MC *mc);
+                      MCBase *mc);
   pele::Array<double> get_mean_coordinate_vector() { return m_mcv.copy(); }
   pele::Array<double> get_mean2_coordinate_vector() { return m_mcv2.copy(); }
   pele::Array<double> get_variance_coordinate_vector() {

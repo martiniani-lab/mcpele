@@ -23,7 +23,7 @@ class RecordEnergyHistogram : public Action {
                         const size_t eqsteps);
   virtual ~RecordEnergyHistogram(){};
   virtual void action(pele::Array<double> &coords, double energy, bool accepted,
-                      MC *mc);
+                      MCBase *mc);
   pele::Array<double> get_histogram() const;
   void print_terminal() const { m_hist.print_terminal(); }
   double get_max() const { return m_hist.max(); }

@@ -21,7 +21,7 @@ class CheckSphericalContainer : public ConfTest {
 
  public:
   CheckSphericalContainer(const double radius, const size_t ndim);
-  virtual bool conf_test(pele::Array<double> &trial_coords, MC *mc);
+  virtual bool conf_test(pele::Array<double> &trial_coords, MCBase *mc);
   virtual ~CheckSphericalContainer() {}
 };
 

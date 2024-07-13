@@ -21,7 +21,7 @@
 struct TrivialTakestep : public mcpele::TakeStep {
   size_t call_count;
   TrivialTakestep() : call_count(0) {}
-  virtual void displace(pele::Array<double> &coords, mcpele::MC *mc = NULL) {
+  virtual void displace(pele::Array<double> &coords, mcpele::MCBase *mc = NULL) {
     call_count++;
   }
 };

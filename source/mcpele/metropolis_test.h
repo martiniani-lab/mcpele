@@ -22,7 +22,7 @@ class MetropolisTest : public AcceptTest {
   virtual ~MetropolisTest() {}
   virtual bool test(pele::Array<double> &trial_coords, double trial_energy,
                     pele::Array<double> &old_coords, double old_energy,
-                    double temperature, MC *mc);
+                    double temperature, MCBase *mc);
   size_t get_seed() const { return m_seed; }
   void set_generator_seed(const size_t inp) { m_generator.seed(inp); }
 };

@@ -20,10 +20,10 @@ class RecordScalarTimeseries : public Action {
   RecordScalarTimeseries(const size_t, const size_t);
   virtual ~RecordScalarTimeseries() {}
   virtual void action(pele::Array<double> &coords, double energy, bool accepted,
-                      MC *mc);
+                      MCBase *mc);
   virtual double get_recorded_scalar(pele::Array<double> &coords,
                                      const double energy, const bool accepted,
-                                     MC *mc) = 0;
+                                     MCBase *mc) = 0;
   pele::Array<double> get_time_series() {
     m_time_series.shrink_to_fit();
     return pele::Array<double>(m_time_series).copy();

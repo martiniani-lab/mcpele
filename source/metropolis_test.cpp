@@ -16,7 +16,7 @@ MetropolisTest::MetropolisTest(const size_t rseed)
 
 bool MetropolisTest::test(Array<double> &trial_coords, double trial_energy,
                           Array<double> &old_coords, double old_energy,
-                          double temperature, MC *mc) {
+                          double temperature, MCBase *mc) {
   double w, rand;
   bool success = true;
   double dE = trial_energy - old_energy;

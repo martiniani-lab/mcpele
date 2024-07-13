@@ -31,7 +31,7 @@ class UniformSphericalSampling : public TakeStep {
   void set_origin(const pele::Array<double> origin) {
     m_origin = origin.copy();
   }
-  virtual void displace(pele::Array<double> &coords, MC *mc) {
+  virtual void displace(pele::Array<double> &coords, MCBase *mc) {
     for (size_t i = 0; i < coords.size(); ++i) {
       coords[i] = m_dist_normal(m_gen);
     }

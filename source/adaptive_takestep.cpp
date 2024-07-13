@@ -21,7 +21,7 @@ AdaptiveTakeStep::AdaptiveTakeStep(std::shared_ptr<TakeStep> ts,
 
 void AdaptiveTakeStep::report(pele::Array<double> &, const double,
                               pele::Array<double> &, const double,
-                              const bool success, MC *mc) {
+                              const bool success, MCBase *mc) {
   ++m_total_steps;
   if (success) {
     ++m_accepted_steps;

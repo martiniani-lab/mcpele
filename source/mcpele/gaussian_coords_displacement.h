@@ -33,7 +33,7 @@ class GaussianTakeStep : public TakeStep {
   GaussianTakeStep(const size_t rseed, const double stepsize,
                    const size_t ndim);
   virtual ~GaussianTakeStep() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc) = 0;
+  virtual void displace(pele::Array<double> &coords, MCBase *mc) = 0;
   size_t get_seed() const { return m_seed; }
   void set_generator_seed(const size_t inp) { m_generator.seed(inp); }
   double get_stepsize() const { return m_stepsize; }
@@ -50,7 +50,7 @@ class GaussianCoordsDisplacement : public GaussianTakeStep {
   GaussianCoordsDisplacement(const size_t rseed, const double stepsize,
                              const size_t ndim);
   virtual ~GaussianCoordsDisplacement() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc);
+  virtual void displace(pele::Array<double> &coords, MCBase *mc);
 };
 
 /**
@@ -67,7 +67,7 @@ class SampleGaussian : public GaussianTakeStep {
   SampleGaussian(const size_t rseed, const double stepsize,
                  const pele::Array<double> origin);
   virtual ~SampleGaussian() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc);
+  virtual void displace(pele::Array<double> &coords, MCBase *mc);
 };
 
 }  // namespace mcpele

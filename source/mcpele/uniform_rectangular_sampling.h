@@ -18,7 +18,7 @@ class UniformRectangularSampling : public TakeStep {
                              const pele::Array<double> boxvec)
       : m_gen(seed), m_dist05(-0.5, 0.5), m_boxvec(boxvec.copy()) {}
   void set_generator_seed(const size_t inp) { m_gen.seed(inp); }
-  virtual void displace(pele::Array<double> &coords, MC *mc) {
+  virtual void displace(pele::Array<double> &coords, MCBase *mc) {
     if (coords.size() % m_boxvec.size()) {
       throw std::runtime_error(
           "UniformRectangularSampling::displace: coords "

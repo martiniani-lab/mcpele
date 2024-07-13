@@ -10,7 +10,7 @@ RecordEnergyHistogram::RecordEnergyHistogram(const double min, const double max,
     : m_hist(min, max, bin), m_eqsteps(eqsteps), m_count(0) {}
 
 void RecordEnergyHistogram::action(Array<double> &coords, double energy,
-                                   bool accepted, MC *mc) {
+                                   bool accepted, MCBase *mc) {
   m_count = mc->get_iterations_count();
   if (m_count > m_eqsteps) {
     m_hist.add_entry(energy);

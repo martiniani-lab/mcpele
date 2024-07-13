@@ -15,7 +15,7 @@
 #include "success_container.h"
 namespace mcpele {
 
-class MC;
+class MCBase;
 
 /*
  * Action
@@ -27,7 +27,7 @@ class Action {
   // virtual ~Action(){std::cout << "~Action()" <<  "\n";}
   virtual ~Action() {}
   virtual void action(pele::Array<double> &coords, double energy, bool accepted,
-                      MC *mc) = 0;
+                      MCBase *mc) = 0;
 };
 
 /*
@@ -41,7 +41,7 @@ class AcceptTest {
   virtual ~AcceptTest() {}
   virtual bool test(pele::Array<double> &trial_coords, double trial_energy,
                     pele::Array<double> &old_coords, double old_energy,
-                    double temperature, MC *mc) = 0;
+                    double temperature, MCBase *mc) = 0;
 };
 
 /*
@@ -53,7 +53,7 @@ class ConfTest {
   // ConfTest(){std::cout << "ConfTest()" <<  "\n";}
   // virtual ~ConfTest(){std::cout << "~ConfTest()" <<  "\n";}
   virtual ~ConfTest() {}
-  virtual bool conf_test(pele::Array<double> &trial_coords, MC *mc) = 0;
+  virtual bool conf_test(pele::Array<double> &trial_coords, MCBase *mc) = 0;
 };
 
 inline std::string demangle(const char *mangled) {
@@ -73,9 +73,10 @@ inline std::string demangle(const char *mangled) {
 class TakeStep {
  public:
   virtual ~TakeStep() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc) = 0;
+  virtual void displace(pele::Array<double> &coords, MCBase *mc) = 0;
   virtual void report(pele::Array<double> &, const double,
-                      pele::Array<double> &, const double, const bool, MC *) {}
+                      pele::Array<double> &, const double, const bool,
+                      MCBase *) {}
   virtual void increase_acceptance(const double) {}
   virtual void decrease_acceptance(const double) {}
   virtual const std::vector<size_t> get_changed_atoms() const {
@@ -84,7 +85,7 @@ class TakeStep {
   virtual const std::vector<double> get_changed_coords_old() const {
     return std::vector<double>();
   }
-  virtual void set_current_step_name(MC *mc, std::string prefix = "");
+  virtual void set_current_step_name(MCBase *mc, std::string prefix = "");
 };
 
 /**
@@ -102,29 +103,40 @@ class TakeStep {
  * rejected
  */
 
-class MC {
+class MCBase {
  public:
   typedef std::vector<std::shared_ptr<Action>> actions_t;
-  typedef std::vector<std::shared_ptr<AcceptTest>> accept_t;
-  typedef std::vector<std::shared_ptr<ConfTest>> conf_t;
 
  protected:
   std::shared_ptr<pele::BasePotential> m_potential;
   pele::Array<double> m_coords;
   pele::Array<double> m_trial_coords;
-  actions_t m_actions;
-  accept_t m_accept_tests;
-  conf_t m_conf_tests;
-  conf_t m_late_conf_tests;
-  std::shared_ptr<TakeStep> m_take_step;
-  SuccessAccumulator m_success_accumulator;
   size_t m_nitercount;
   size_t m_accept_count;
-  size_t m_E_reject_count;
-  size_t m_conf_reject_count;
   bool m_success, m_last_success;
   bool m_print_progress;
   bool m_use_energy_change;
+  size_t m_report_steps;
+  bool m_enable_input_warnings;
+  SuccessAccumulator m_success_accumulator;
+  actions_t m_actions;
+
+  double compute_energy(pele::Array<double> const &x) {
+    ++m_neval;
+    return m_potential->get_energy(x);
+  }
+  double compute_energy_change(pele::Array<double> const &old_coords,
+                               pele::Array<double> const &new_coords,
+                               std::vector<size_t> const &changed_atoms) {
+    ++m_neval;
+    return m_potential->get_energy_change(old_coords, new_coords,
+                                          changed_atoms);
+  }
+  void do_actions(pele::Array<double> &x, double energy, bool success) {
+    for (const auto &action : m_actions) {
+      action->action(x, energy, success, this);
+    }
+  }
 
  public:
   /*need to keep these public to make them accessible to tests and actions, be
@@ -137,41 +149,25 @@ class MC {
   double m_energy;
   double m_trial_energy;
   bool m_record_acceptance_rate;  // recording acceptance rates can be really
-                                  // slow depending on the potential
- private:
-  size_t m_report_steps;
-  bool m_enable_input_warnings;
+  // slow depending on the potential
 
- public:
-  MC(std::shared_ptr<pele::BasePotential> potential,
-     pele::Array<double> &coords, const double temperature);
-  virtual ~MC() {}
-  void one_iteration();
+  MCBase(const std::shared_ptr<pele::BasePotential> &potential,
+         const pele::Array<double> &coords, double temperature);
+  virtual ~MCBase() {}
+  virtual void one_iteration() = 0;
+  virtual void check_input() = 0;
 
-  void run(const size_t max_iter);
+  void run(size_t max_iter);
+  void add_action(const std::shared_ptr<Action> &action) {
+    m_actions.push_back(action);
+  }
   void set_temperature(const double T) { m_temperature = T; }
   double get_temperature() const { return m_temperature; }
   void set_report_steps(const size_t report_steps) {
     m_report_steps = report_steps;
   }
   size_t get_report_steps() const { return m_report_steps; }
-  void add_action(std::shared_ptr<Action> action) {
-    m_actions.push_back(action);
-  }
-  void add_accept_test(std::shared_ptr<AcceptTest> accept_test) {
-    m_accept_tests.push_back(accept_test);
-  }
-  void add_conf_test(std::shared_ptr<ConfTest> conf_test) {
-    m_conf_tests.push_back(conf_test);
-  }
-  void add_late_conf_test(std::shared_ptr<ConfTest> conf_test) {
-    m_late_conf_tests.push_back(conf_test);
-  }
-  void set_takestep(std::shared_ptr<TakeStep> takestep) {
-    m_take_step = takestep;
-  }
-  std::shared_ptr<TakeStep> get_takestep() const { return m_take_step; }
-  void set_coordinates(pele::Array<double> &coords, double energy);
+  void set_coordinates(const pele::Array<double> &coords, double energy);
   double get_energy() const { return m_energy; }
   void reset_energy();
   double get_trial_energy() const { return m_trial_energy; }
@@ -183,12 +179,72 @@ class MC {
   void set_use_energy_change(const bool use_energy_change) {
     m_use_energy_change = use_energy_change;
   }
-
   // get acceptance and rejection fractions
   double get_accepted_fraction() const {
     return static_cast<double>(m_accept_count) /
            static_cast<double>(m_nitercount);
   }
+  double get_norm_trial_coords() const { return norm(m_trial_coords); }
+  size_t get_iterations_count() const { return m_nitercount; }
+  size_t get_neval() const { return m_neval; }
+  std::shared_ptr<pele::BasePotential> get_potential_ptr() {
+    return m_potential;
+  }
+  bool report_steps_specified() const { return get_report_steps() > 0; }
+  void set_print_progress(const bool input) { m_print_progress = input; }
+  void set_print_progress() { set_print_progress(true); }
+  // Assuming that these are running one iteration
+  bool get_success() const { return m_last_success; }
+  bool get_last_success() const { return m_last_success; }
+  SuccessAccumulator get_success_accumulator() const {
+    return m_success_accumulator;
+  }
+  // this helps map the step name to the success accumulator
+  void add_step_name_to_success_accumulator(const std::string &name) {
+    m_success_accumulator.add_step_taken(name);
+  }
+  /**
+   * this will trigger premature exit from the MC run loop
+   */
+  void abort() { m_niter = std::numeric_limits<size_t>::max(); }
+  void enable_input_warnings() { m_enable_input_warnings = true; }
+  void disable_input_warnings() { m_enable_input_warnings = false; }
+};
+
+class MC : public MCBase {
+ public:
+  typedef std::vector<std::shared_ptr<AcceptTest>> accept_t;
+  typedef std::vector<std::shared_ptr<ConfTest>> conf_t;
+
+ protected:
+  accept_t m_accept_tests;
+  conf_t m_conf_tests;
+  conf_t m_late_conf_tests;
+  std::shared_ptr<TakeStep> m_take_step;
+  size_t m_E_reject_count;
+  size_t m_conf_reject_count;
+
+ public:
+  MC(const std::shared_ptr<pele::BasePotential> &potential,
+     const pele::Array<double> &coords, double temperature);
+  ~MC() override = default;
+  void one_iteration() override;
+  void check_input() override;
+
+  void add_accept_test(const std::shared_ptr<AcceptTest> &accept_test) {
+    m_accept_tests.push_back(accept_test);
+  }
+  void add_conf_test(const std::shared_ptr<ConfTest> &conf_test) {
+    m_conf_tests.push_back(conf_test);
+  }
+  void add_late_conf_test(const std::shared_ptr<ConfTest> &conf_test) {
+    m_late_conf_tests.push_back(conf_test);
+  }
+  void set_takestep(const std::shared_ptr<TakeStep> &takestep) {
+    m_take_step = takestep;
+  }
+  std::shared_ptr<TakeStep> get_takestep() const { return m_take_step; }
+
   double get_conf_rejection_fraction() const {
     return static_cast<double>(m_conf_reject_count) /
            static_cast<double>(m_nitercount);
@@ -198,31 +254,7 @@ class MC {
            static_cast<double>(m_nitercount);
   }
 
-  double get_norm_trial_coords() const { return norm(m_trial_coords); }
-
-  size_t get_iterations_count() const { return m_nitercount; }
-  size_t get_neval() const { return m_neval; }
-  std::shared_ptr<pele::BasePotential> get_potential_ptr() {
-    return m_potential;
-  }
-  bool take_step_specified() const { return m_take_step != NULL; }
-  bool report_steps_specified() const { return get_report_steps() > 0; }
-  void check_input();
-
-  void set_print_progress(const bool input) { m_print_progress = input; }
-  void set_print_progress() { set_print_progress(true); }
-
-  // Assuming that these are running one iteration
-  bool get_success() const { return m_last_success; }
-  bool get_last_success() const { return m_last_success; }
-  SuccessAccumulator get_success_accumulator() const {
-    return m_success_accumulator;
-  }
-
-  // this helps map the step name to the success accumulator
-  void add_step_name_to_success_accumulator(const std::string &name) {
-    m_success_accumulator.add_step_taken(name);
-  }
+  bool take_step_specified() const { return m_take_step != nullptr; }
 
   pele::Array<size_t> get_counters() const {
     pele::Array<size_t> counters(5);
@@ -246,35 +278,15 @@ class MC {
   const std::vector<double> get_changed_coords_old() const {
     return m_take_step->get_changed_coords_old();
   }
-  /**
-   * this will trigger premature exit from the MC run loop
-   */
-  void abort() { m_niter = std::numeric_limits<size_t>::max(); }
-  void enable_input_warnings() { m_enable_input_warnings = true; }
-  void disable_input_warnings() { m_enable_input_warnings = false; }
 
  protected:
-  inline double compute_energy(pele::Array<double> const &x) {
-    ++m_neval;
-    return m_potential->get_energy(x);
-  }
-  inline double compute_energy_change(
-      pele::Array<double> const &old_coords,
-      pele::Array<double> const &new_coords,
-      std::vector<size_t> const &changed_atoms) {
-    ++m_neval;
-    return m_potential->get_energy_change(old_coords, new_coords,
-                                          changed_atoms);
-  }
-
   bool do_conf_tests(pele::Array<double> &x);
   bool do_accept_tests(pele::Array<double> &xtrial, double etrial,
                        pele::Array<double> &xold, double eold);
   bool do_late_conf_tests(pele::Array<double> &x);
-  void do_actions(pele::Array<double> &x, double energy, bool success);
   void take_steps();
 };
 
 }  // namespace mcpele
 
-#endif  //#ifndef _MCPELE_MC_H
+#endif  // #ifndef _MCPELE_MC_H

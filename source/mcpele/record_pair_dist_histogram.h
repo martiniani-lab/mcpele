@@ -53,7 +53,7 @@ class RecordPairDistHistogram : public Action {
         m_optimizer(optimizer) {}
   virtual ~RecordPairDistHistogram() {}
   virtual void action(pele::Array<double> &coords, double energy, bool accepted,
-                      MC *mc) {
+                      MCBase *mc) {
     const size_t count = mc->get_iterations_count();
     if (count > m_eqsteps) {
       if (count % m_record_every == 0) {

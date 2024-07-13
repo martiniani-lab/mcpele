@@ -81,7 +81,7 @@ class ParticlePairSwap : public TakeStep {
   virtual ~ParticlePairSwap() {}
   ParticlePairSwap(const size_t seed, const size_t nr_particles,
                    const size_t ndim);
-  void displace(pele::Array<double> &coords, MC *mc);
+  void displace(pele::Array<double> &coords, MCBase *mc);
   void swap_coordinates(const size_t particle_a, const size_t particle_b,
                         pele::Array<double> &coords);
   size_t get_seed() const { return m_seed; }

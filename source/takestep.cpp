@@ -2,7 +2,7 @@
 
 namespace mcpele {
 
-void TakeStep::set_current_step_name(MC *mc, std::string prefix) {
+void TakeStep::set_current_step_name(MCBase *mc, std::string prefix) {
   if (!mc->m_record_acceptance_rate) {
     return;
   }

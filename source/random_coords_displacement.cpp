@@ -33,7 +33,7 @@ RandomCoordsDisplacementAll::RandomCoordsDisplacementAll(
       m_changed_coords_old(nparticles * ndim) {}
 
 void RandomCoordsDisplacementAll::displace(pele::Array<double> &coords,
-                                           MC *mc) {
+                                           MCBase *mc) {
   std::iota(m_changed_atoms.begin(), m_changed_atoms.end(), 0);
   if (m_changed_coords_old.size() != 0) {
     std::copy(coords.begin(), coords.end(), m_changed_coords_old.begin());
@@ -58,7 +58,7 @@ RandomCoordsDisplacementSingle::RandomCoordsDisplacementSingle(
       m_changed_coords_old(ndim) {}
 
 void RandomCoordsDisplacementSingle::displace(pele::Array<double> &coords,
-                                              MC *mc) {
+                                              MCBase *mc) {
   m_changed_atoms[0] = m_int_distribution(m_generator);
   size_t offset = m_changed_atoms[0] * m_ndim;
   for (size_t i = 0; i < m_ndim; ++i) {

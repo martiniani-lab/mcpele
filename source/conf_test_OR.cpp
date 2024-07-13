@@ -9,7 +9,7 @@ void ConfTestOR::add_test(std::shared_ptr<ConfTest> test_input) {
   m_tests.swap(m_tests);
 }
 
-bool ConfTestOR::conf_test(pele::Array<double> &trial_coords, MC *mc) {
+bool ConfTestOR::conf_test(pele::Array<double> &trial_coords, MCBase *mc) {
   if (m_tests.size() == 0) {
     throw std::runtime_error("ConfTestOR::conf_test: no conf test specified");
   }

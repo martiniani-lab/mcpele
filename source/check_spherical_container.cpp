@@ -9,7 +9,7 @@ CheckSphericalContainer::CheckSphericalContainer(const double radius,
                                                  const size_t ndim)
     : m_radius2(radius * radius), m_ndim(ndim) {}
 
-bool CheckSphericalContainer::conf_test(Array<double> &trial_coords, MC *mc) {
+bool CheckSphericalContainer::conf_test(Array<double> &trial_coords, MCBase *mc) {
   const size_t N = trial_coords.size();
   for (size_t i = 0; i < N; i += m_ndim) {
     double r2 = 0;

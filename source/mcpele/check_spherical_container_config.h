@@ -12,7 +12,7 @@ class CheckSphericalContainerConfig : public ConfTest {
  public:
   CheckSphericalContainerConfig(const double radius)
       : m_radius2(radius * radius) {}
-  bool conf_test(pele::Array<double> &trial_coords, MC *mc) {
+  bool conf_test(pele::Array<double> &trial_coords, MCBase *mc) {
     return pele::dot(trial_coords, trial_coords) <= m_radius2;
   }
   virtual ~CheckSphericalContainerConfig() {}

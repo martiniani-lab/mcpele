@@ -21,7 +21,7 @@ class EnergyWindowTest : public AcceptTest {
   virtual ~EnergyWindowTest() {}
   virtual bool test(pele::Array<double> &trial_coords, double trial_energy,
                     pele::Array<double> &old_coords, double old_energy,
-                    double temperature, MC *mc);
+                    double temperature, MCBase *mc);
 };
 
 }  // namespace mcpele

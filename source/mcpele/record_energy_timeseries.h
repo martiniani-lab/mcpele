@@ -12,7 +12,7 @@ class RecordEnergyTimeseries : public RecordScalarTimeseries {
   virtual ~RecordEnergyTimeseries() {}
   virtual double get_recorded_scalar(pele::Array<double> &coords,
                                      const double energy, const bool accepted,
-                                     MC *mc) {
+                                     MCBase *mc) {
     return energy;
   }
 };

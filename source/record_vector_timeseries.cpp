@@ -14,7 +14,7 @@ RecordVectorTimeseries::RecordVectorTimeseries(const size_t record_every,
 }
 
 void RecordVectorTimeseries::action(Array<double> &coords, double energy,
-                                    bool accepted, MC *mc) {
+                                    bool accepted, MCBase *mc) {
   const size_t counter = mc->get_iterations_count();
   if (counter % m_record_every == 0 && counter > m_eqsteps) {
     m_record_vector_value(

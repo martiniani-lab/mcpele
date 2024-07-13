@@ -31,10 +31,10 @@ class TakeStepProbabilities : public TakeStep {
   TakeStepProbabilities(const size_t seed);
   void add_step(std::shared_ptr<TakeStep> step_input,
                 const double weight_input = 1);
-  void displace(pele::Array<double> &coords, MC *mc);
+  void displace(pele::Array<double> &coords, MCBase *mc);
   void report(pele::Array<double> &old_coords, const double old_energy,
               pele::Array<double> &new_coords, const double new_energy,
-              const bool success, MC *mc);
+              const bool success, MCBase *mc);
   std::vector<double> get_weights() const { return m_weights; }
   const std::vector<size_t> get_changed_atoms() const {
     return m_steps.at(m_current_index)->get_changed_atoms();

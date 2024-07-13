@@ -22,7 +22,7 @@
               fabs(B) / (fabs(A) + fabs(B) + 1), T)
 
 using mcpele::ConfTest;
-using mcpele::MC;
+using mcpele::MCBase;
 using pele::Array;
 using std::shared_ptr;
 
@@ -136,7 +136,7 @@ struct TrivialConfTest : public mcpele::ConfTest {
   size_t call_count;
   TrivialConfTest(bool return_val1) : return_val(return_val1), call_count(0) {}
 
-  virtual bool conf_test(Array<double> &trial_coords, mcpele::MC *mc) {
+  virtual bool conf_test(Array<double> &trial_coords, MCBase *mc) {
     call_count++;
     return return_val;
   }
@@ -150,7 +150,7 @@ struct TrivialAcceptTest : public mcpele::AcceptTest {
 
   virtual bool test(Array<double> &trial_coords, double trial_energy,
                     Array<double> &old_coords, double old_energy,
-                    double temperature, MC *mc) {
+                    double temperature, MCBase *mc) {
     call_count++;
     return return_val;
   }
@@ -159,7 +159,7 @@ struct TrivialAcceptTest : public mcpele::AcceptTest {
 struct TrivialTakestep : public mcpele::TakeStep {
   size_t call_count;
   TrivialTakestep() : call_count(0) {}
-  virtual void displace(Array<double> &coords, MC *mc = NULL) { call_count++; }
+  virtual void displace(Array<double> &coords, MCBase *mc = NULL) { call_count++; }
 };
 
 struct TrivialTakestepMessage : public mcpele::TakeStep {
@@ -167,7 +167,7 @@ struct TrivialTakestepMessage : public mcpele::TakeStep {
   std::string message;
   TrivialTakestepMessage(const std::string message_)
       : call_count(0), message(message_) {}
-  virtual void displace(Array<double> &coords, MC *mc = NULL) {
+  virtual void displace(Array<double> &coords, MCBase *mc = NULL) {
     call_count++;
     std::cout << message << "\n";
     std::cout << "call_count: " << call_count << "\n";
@@ -178,7 +178,7 @@ struct TrivialAction : public mcpele::Action {
   size_t call_count;
   TrivialAction() : call_count(0) {}
   virtual void action(Array<double> &coords, double energy, bool accepted,
-                      MC *mc) {
+                      MCBase *mc) {
     call_count++;
   }
 };
@@ -202,7 +202,7 @@ class TrivialPotential : public pele::BasePotential {
 
 class TestMCMock : public ::testing::Test {
  public:
-  MC *mc;
+  mcpele::MC *mc;
   Array<double> x0;
   std::shared_ptr<TrivialPotential> pot;
   TrivialConfTest *ct;

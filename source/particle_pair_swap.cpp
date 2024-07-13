@@ -23,7 +23,7 @@ ParticlePairSwap::ParticlePairSwap(const size_t seed, const size_t nr_particles,
   }
 }
 
-void ParticlePairSwap::displace(pele::Array<double> &coords, MC *mc) {
+void ParticlePairSwap::displace(pele::Array<double> &coords, MCBase *mc) {
   if (!m_radii_set) {
     auto pairwise_ptr = dynamic_pointer_cast<pele::PairwisePotentialInterface>(
         mc->get_potential_ptr());

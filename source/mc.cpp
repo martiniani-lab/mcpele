@@ -6,40 +6,69 @@ using pele::Array;
 
 namespace mcpele {
 
-MC::MC(std::shared_ptr<pele::BasePotential> potential, Array<double> &coords,
-       const double temperature)
+MCBase::MCBase(const std::shared_ptr<pele::BasePotential> &potential,
+               const Array<double> &coords, const double temperature)
     : m_potential(potential),
       m_coords(coords.copy()),
       m_trial_coords(m_coords.copy()),
-      m_take_step(NULL),
       m_nitercount(0),
       m_accept_count(0),
-      m_E_reject_count(0),
-      m_conf_reject_count(0),
       m_success(true),
       m_last_success(true),
       m_print_progress(false),
       m_use_energy_change(true),
+      m_report_steps(0),
+      m_enable_input_warnings(true),
       m_niter(0),
       m_neval(0),
       m_temperature(temperature),
-      m_record_acceptance_rate(false),
-      m_report_steps(0),
-      m_enable_input_warnings(true) {
+      m_record_acceptance_rate(false) {
   m_energy = compute_energy(m_coords);
   m_trial_energy = m_energy;
   /*std::cout<<"mcrunner Energy is "<<_energy<< "\n";
   std::cout<<"mcrunner potential ptr is "<<_potential<< "\n";*/
 }
 
+void MCBase::run(const size_t max_iter) {
+  check_input();
+  progress stat(max_iter);
+  while (m_niter < max_iter) {
+    this->one_iteration();
+    if (m_print_progress) {
+      stat.next(m_niter);
+    }
+  }
+  m_niter = 0;
+}
+
+void MCBase::set_coordinates(const Array<double> &coords, const double energy) {
+  m_coords = coords.copy();
+  m_energy = energy;
+}
+
+// this function is necessary if for example some potential parameter has been
+// varied
+void MCBase::reset_energy() {
+  if (m_niter > 0) {
+    throw std::runtime_error(
+        "MC::reset_energy after first iteration is forbidden");
+  }
+  m_energy = compute_energy(m_coords);
+}
+
+MC::MC(const std::shared_ptr<pele::BasePotential> &potential,
+       const Array<double> &coords, const double temperature)
+    : MCBase(potential, coords, temperature),
+      m_take_step(nullptr),
+      m_E_reject_count(0),
+      m_conf_reject_count(0) {}
+
 /**
  * perform the configuration tests.  Stop as soon as one of them fails
  */
 bool MC::do_conf_tests(Array<double> &x) {
-  bool result;
-  for (auto &test : m_conf_tests) {
-    result = test->conf_test(x, this);
-    if (not result) {
+  for (const auto &test : m_conf_tests) {
+    if (const bool result = test->conf_test(x, this); not result) {
       ++m_conf_reject_count;
       return false;
     }
@@ -50,12 +79,12 @@ bool MC::do_conf_tests(Array<double> &x) {
 /**
  * perform the acceptance tests.  Stop as soon as one of them fails
  */
-bool MC::do_accept_tests(Array<double> &xtrial, double etrial,
-                         Array<double> &xold, double eold) {
-  bool result;
-  for (auto &test : m_accept_tests) {
-    result = test->test(xtrial, etrial, xold, eold, m_temperature, this);
-    if (not result) {
+bool MC::do_accept_tests(Array<double> &xtrial, const double etrial,
+                         Array<double> &xold, const double eold) {
+  for (const auto &test : m_accept_tests) {
+    if (const bool result =
+            test->test(xtrial, etrial, xold, eold, m_temperature, this);
+        not result) {
       ++m_E_reject_count;
       return false;
     }
@@ -67,21 +96,13 @@ bool MC::do_accept_tests(Array<double> &xtrial, double etrial,
  * perform the configuration tests.  Stop as soon as one of them fails
  */
 bool MC::do_late_conf_tests(Array<double> &x) {
-  bool result;
-  for (auto &test : m_late_conf_tests) {
-    result = test->conf_test(x, this);
-    if (not result) {
+  for (const auto &test : m_late_conf_tests) {
+    if (const bool result = test->conf_test(x, this); not result) {
       ++m_conf_reject_count;
       return false;
     }
   }
   return true;
-}
-
-void MC::do_actions(Array<double> &x, double energy, bool success) {
-  for (auto &action : m_actions) {
-    action->action(x, energy, success, this);
-  }
 }
 
 void MC::take_steps() {
@@ -178,33 +199,6 @@ void MC::check_input() {
                 << "\n";
     }
   }
-}
-
-void MC::set_coordinates(pele::Array<double> &coords, double energy) {
-  m_coords = coords.copy();
-  m_energy = energy;
-}
-
-// this function is necessary if for example some potential parameter has been
-// varied
-void MC::reset_energy() {
-  if (m_niter > 0) {
-    throw std::runtime_error(
-        "MC::reset_energy after first iteration is forbidden");
-  }
-  m_energy = compute_energy(m_coords);
-}
-
-void MC::run(size_t max_iter) {
-  check_input();
-  progress stat(max_iter);
-  while (m_niter < max_iter) {
-    this->one_iteration();
-    if (m_print_progress) {
-      stat.next(m_niter);
-    }
-  }
-  m_niter = 0;
 }
 
 }  // namespace mcpele

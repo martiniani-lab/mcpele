@@ -16,7 +16,7 @@
 #include "pele/harmonic.hpp"
 #include "pele/meta_pow.hpp"
 
-using mcpele::MC;
+using mcpele::MCBase;
 using mcpele::TakeStep;
 using pele::Array;
 
@@ -250,11 +250,11 @@ class TrivialTakestep : public mcpele::TakeStep {
  public:
   virtual ~TrivialTakestep() {}
   TrivialTakestep() : call_count(0), report_count(0) {}
-  virtual void displace(Array<double> &coords, MC *mc = NULL) { call_count++; }
+  virtual void displace(Array<double> &coords, MCBase *mc = NULL) { call_count++; }
   size_t get_call_count() const { return call_count; }
   size_t get_report_count() const { return report_count; }
   virtual void report(pele::Array<double> &, const double,
-                      pele::Array<double> &, const double, const bool, MC *) {
+                      pele::Array<double> &, const double, const bool, MCBase *) {
     ++report_count;
   }
 };
@@ -266,9 +266,9 @@ struct TrivialTakestep2 : public mcpele::TakeStep {
   size_t get_report_count() const { return report_counter; }
   virtual ~TrivialTakestep2() {}
   TrivialTakestep2() : call_counter(0), report_counter(0) {}
-  virtual void displace(Array<double> &, MC *) { ++call_counter; }
+  virtual void displace(Array<double> &, MCBase *) { ++call_counter; }
   virtual void report(pele::Array<double> &, const double,
-                      pele::Array<double> &, const double, const bool, MC *) {
+                      pele::Array<double> &, const double, const bool, MCBase *) {
     ++report_counter;
   }
 };

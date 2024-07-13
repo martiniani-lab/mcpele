@@ -25,7 +25,7 @@ class RecordLowestEValueTimeseries : public RecordScalarTimeseries {
   virtual ~RecordLowestEValueTimeseries() {}
   virtual double get_recorded_scalar(pele::Array<double> &coords,
                                      const double energy, const bool accepted,
-                                     MC *mc) {
+                                     MCBase *mc) {
     return m_lowest_ev.compute_lowest_eigenvalue(coords);
   }
 };

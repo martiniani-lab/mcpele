@@ -28,7 +28,7 @@ class RandomCoordsDisplacement : public TakeStep {
   RandomCoordsDisplacement(const size_t rseed, const double stepsize = 1,
                            const double max_stepsize = 0);
   virtual ~RandomCoordsDisplacement() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc) = 0;
+  virtual void displace(pele::Array<double> &coords, MCBase *mc) = 0;
   size_t get_seed() const { return m_seed; }
   void set_generator_seed(const size_t inp) { m_generator.seed(inp); }
   double expected_mean() const { return 0; }
@@ -65,7 +65,7 @@ class
                               const size_t ndim, const double stepsize = 1,
                               double max_stepsize = 0);
   virtual ~RandomCoordsDisplacementAll() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc);
+  virtual void displace(pele::Array<double> &coords, MCBase *mc);
   const std::vector<size_t> get_changed_atoms() const {
     return m_changed_atoms;
   }
@@ -86,7 +86,7 @@ class RandomCoordsDisplacementSingle : public RandomCoordsDisplacement {
                                  const size_t ndim, const double stepsize = 1,
                                  const double max_stepsize = 0.0);
   virtual ~RandomCoordsDisplacementSingle() {}
-  virtual void displace(pele::Array<double> &coords, MC *mc);
+  virtual void displace(pele::Array<double> &coords, MCBase *mc);
   size_t get_rand_particle() {
     return m_changed_atoms[0];
   }  // dangerous function, should be used only for testing purposes

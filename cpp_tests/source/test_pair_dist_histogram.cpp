@@ -16,7 +16,7 @@ using pele::Array;
               fabs(B) / (fabs(A) + fabs(B) + 1), T)
 
 using mcpele::ConfTest;
-using mcpele::MC;
+using mcpele::MCBase;
 using std::shared_ptr;
 
 #define boxdim 3
@@ -32,7 +32,7 @@ struct TrivialPotential : public pele::BasePotential {
 struct TrivialTakestep : public mcpele::TakeStep {
   size_t call_count;
   TrivialTakestep() : call_count(0) {}
-  virtual void displace(Array<double> &coords, MC *mc) { call_count++; }
+  virtual void displace(Array<double> &coords, MCBase *mc) { call_count++; }
 };
 
 class TestPairDistHist : public ::testing::Test {

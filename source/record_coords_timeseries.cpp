@@ -33,7 +33,7 @@ void RecordCoordsTimeseries::m_update_mean_coord_vector(
 }
 
 void RecordCoordsTimeseries::action(pele::Array<double> &coords, double energy,
-                                    bool accepted, MC *mc) {
+                                    bool accepted, MCBase *mc) {
   if (coords.size() != m_ndof) {
     throw std::runtime_error(
         "RecordCoordsTimeseries::action: ndof and new "

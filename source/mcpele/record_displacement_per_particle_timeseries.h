@@ -25,7 +25,7 @@ class RecordDisplacementPerParticleTimeseries : public RecordScalarTimeseries {
   virtual ~RecordDisplacementPerParticleTimeseries() {}
   virtual double get_recorded_scalar(pele::Array<double> &coords,
                                      const double energy, const bool accepted,
-                                     MC *mc) {
+                                     MCBase *mc) {
     return m_rsm_displacement.compute_mean_particle_displacement(coords);
   }
 };

@@ -24,7 +24,7 @@ GaussianCoordsDisplacement::GaussianCoordsDisplacement(const size_t rseed,
     : GaussianTakeStep(rseed, stepsize, ndim) {}
 
 /*see https://en.wikipedia.org/wiki/Multivariate_normal_distribution*/
-void GaussianCoordsDisplacement::displace(pele::Array<double> &coords, MC *mc) {
+void GaussianCoordsDisplacement::displace(pele::Array<double> &coords, MCBase *mc) {
   this->m_sample_normal_vec();
   m_normal_vec /=
       norm(m_normal_vec);  // sample from surface of unit hypersphere
@@ -45,7 +45,7 @@ SampleGaussian::SampleGaussian(const size_t rseed, const double stepsize,
  * SampleGaussian::displace ignore the coords passed to it and it sample
  * with mean centered at the origin and stdev defined by the stepsize
  * */
-void SampleGaussian::displace(pele::Array<double> &coords, MC *mc) {
+void SampleGaussian::displace(pele::Array<double> &coords, MCBase *mc) {
   this->m_sample_normal_vec();
   for (size_t i = 0; i < m_ndim; ++i) {
     coords[i] = m_origin[i] +
