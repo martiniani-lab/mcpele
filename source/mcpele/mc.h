@@ -156,6 +156,9 @@ class MCBase {
   virtual ~MCBase() {}
   virtual void one_iteration() = 0;
   virtual void check_input() = 0;
+  virtual std::shared_ptr<TakeStep> get_takestep() const = 0;
+  virtual const std::vector<size_t> get_changed_atoms() const = 0;
+  virtual const std::vector<double> get_changed_coords_old() const = 0;
 
   void run(size_t max_iter);
   void add_action(const std::shared_ptr<Action> &action) {
@@ -243,7 +246,7 @@ class MC : public MCBase {
   void set_takestep(const std::shared_ptr<TakeStep> &takestep) {
     m_take_step = takestep;
   }
-  std::shared_ptr<TakeStep> get_takestep() const { return m_take_step; }
+  std::shared_ptr<TakeStep> get_takestep() const override { return m_take_step; }
 
   double get_conf_rejection_fraction() const {
     return static_cast<double>(m_conf_reject_count) /
@@ -272,10 +275,10 @@ class MC : public MCBase {
     m_conf_reject_count = counters[3];
     m_neval = counters[4];
   }
-  const std::vector<size_t> get_changed_atoms() const {
+  const std::vector<size_t> get_changed_atoms() const override {
     return m_take_step->get_changed_atoms();
   }
-  const std::vector<double> get_changed_coords_old() const {
+  const std::vector<double> get_changed_coords_old() const override {
     return m_take_step->get_changed_coords_old();
   }
 

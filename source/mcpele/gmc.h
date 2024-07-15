@@ -72,6 +72,7 @@ class GMC final : public MCBase {
   ~GMC() override = default;
   void one_iteration() override;
   void check_input() override;
+  std::shared_ptr<TakeStep> get_takestep() const override { return m_take_step; }
 
   void add_accept_test(const std::shared_ptr<AcceptTest> &accept_test) {
     m_accept_tests.push_back(accept_test);
@@ -81,6 +82,12 @@ class GMC final : public MCBase {
   }
   void add_late_conf_test(const std::shared_ptr<GMCConfTest> &conf_test) {
     m_late_conf_tests.push_back(conf_test);
+  }
+  const std::vector<size_t> get_changed_atoms() const override {
+    throw std::runtime_error("GMC::get_changed_atoms: not implemented");
+  }
+  const std::vector<double> get_changed_coords_old() const override {
+    throw std::runtime_error("GMC::get_changed_coords_old: not implemented");
   }
 };
 
