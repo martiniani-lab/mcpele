@@ -9,7 +9,8 @@ GMC::GMC(std::shared_ptr<pele::BasePotential> potential,
          const double max_timestep, const bool use_random_timestep,
          const size_t adaptive_interval, const double adaptive_factor,
          const double adaptive_min_acceptance_ratio,
-         const double adaptive_max_acceptance_ratio)
+         const double adaptive_max_acceptance_ratio,
+         const bool reflect_boundary, const bool reflect_potential)
     : MCBase(std::move(potential), coords, temperature),
       m_take_step(std::make_shared<GMCTakeStep>(timestep, nparticles, ndim,
                                                 rseed, max_timestep,
@@ -20,11 +21,18 @@ GMC::GMC(std::shared_ptr<pele::BasePotential> potential,
       accumulated_gradient(coords.size()),
       m_E_reject_count(0),
       m_conf_reject_count(0),
-      resample_velocity_steps(resample_velocity_steps) {
+      resample_velocity_steps(resample_velocity_steps),
+      m_reflect_boundary(reflect_boundary),
+      m_reflect_potential(reflect_potential) {
   m_use_energy_change = false;
   if (coords.size() != nparticles * ndim) {
     throw std::runtime_error(
         "GMC::GMC: coords size does not match nparticles * ndim");
+  }
+  if (not(m_reflect_boundary or m_reflect_potential)) {
+    throw std::runtime_error(
+        "GMC::GMC: at least one of reflect_boundary or reflect_potential must "
+        "be true");
   }
 }
 
@@ -57,9 +65,11 @@ void GMC::one_iteration() {
     if (const bool result = test->conf_test(m_trial_coords, this); !result) {
       success_conf = false;
     }
-    const auto gradient = test->gmc_gradient(m_coords, this);
-    assert(fabs(norm(gradient) - 1.0) < 1.0e-12);
-    accumulated_gradient += gradient;
+    if (m_reflect_boundary) {
+      const auto gradient = test->gmc_gradient(m_coords, this);
+      assert(fabs(norm(gradient) - 1.0) < 1.0e-12);
+      accumulated_gradient += gradient;
+    }
   }
 
   bool success_accept = true;
@@ -71,6 +81,13 @@ void GMC::one_iteration() {
         !result) {
       success_accept = false;
     }
+    if (m_reflect_potential) {
+      pele::Array gradient(m_coords.size(), 0.0);
+      m_potential->get_energy_gradient(m_coords, gradient);
+      gradient /= norm(gradient);
+      assert(fabs(norm(gradient) - 1.0) < 1.0e-12);
+      accumulated_gradient -= gradient;
+    }
   }
 
   bool success_late_conf = true;
@@ -78,9 +95,11 @@ void GMC::one_iteration() {
     if (const bool result = test->conf_test(m_trial_coords, this); !result) {
       success_late_conf = false;
     }
-    const auto gradient = test->gmc_gradient(m_coords, this);
-    assert(fabs(norm(gradient) - 1.0) < 1.0e-12);
-    accumulated_gradient += gradient;
+    if (m_reflect_boundary) {
+      const auto gradient = test->gmc_gradient(m_coords, this);
+      assert(fabs(norm(gradient) - 1.0) < 1.0e-12);
+      accumulated_gradient += gradient;
+    }
   }
 
   m_success = success_conf && success_accept && success_late_conf;

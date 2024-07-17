@@ -15,7 +15,8 @@ class GalileanMonteCarloRunner(_BaseGMCRunner):
                  use_random_timestep: bool = False, conftests: Sequence[_Cdef_GMCConfTest] = (),
                  late_conftests: Sequence[_Cdef_GMCConfTest] = (), actions: Sequence[_Cdef_Action] = (),
                  seeds: Optional[dict[str, int]] = None, adaptive_iterations: int = 1000, adaptive_interval: int = 100,
-                 adaptive_factor: float = 0.9, adaptive_acceptance=0.5) -> None:
+                 adaptive_factor: float = 0.9, adaptive_acceptance: float = 0.5,
+                 reflect_boundary: bool = True, reflect_potential: bool = False) -> None:
         if seeds is not None:
             if "takestep" not in seeds or "metropolis" not in seeds:
                 raise ValueError("Seeds must contain takestep and metropolis keys.")
@@ -28,7 +29,7 @@ class GalileanMonteCarloRunner(_BaseGMCRunner):
             )
         super().__init__(potential, coords, temperature, pniter, timestep, nparticles, ndim, seeds["takestep"],
                          resample_velocity_steps, max_timestep, use_random_timestep, adaptive_interval, adaptive_factor,
-                         adaptive_acceptance, adaptive_acceptance)
+                         adaptive_acceptance, adaptive_acceptance, reflect_boundary, reflect_potential)
         self.set_report_steps(adaptive_iterations)  # set number of iterations for which steps are adapted
         self._conftests = conftests
         self._late_conftests = late_conftests

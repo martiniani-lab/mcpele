@@ -19,7 +19,7 @@ cdef class _Cdef_GMCConfTest:
 cdef extern from "mcpele/gmc.h" namespace "mcpele":
     cdef cppclass cppGMC "mcpele::GMC"(cppMCBase):
         cppGMC(shared_ptr[_pele.cBasePotential], _pele.Array[double] &, double, double, size_t, size_t, size_t, size_t,
-               double, cbool, size_t, double, double, double) except +
+               double, cbool, size_t, double, double, double, cbool, cbool) except +
         void add_accept_test(shared_ptr[cppAcceptTest]) except +
         void add_conf_test(shared_ptr[cppGMCConfTest]) except +
         void add_late_conf_test(shared_ptr[cppGMCConfTest]) except +

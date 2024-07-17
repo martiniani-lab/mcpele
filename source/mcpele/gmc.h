@@ -31,6 +31,8 @@ class GMC final : public MCBase {
   size_t m_E_reject_count;
   size_t m_conf_reject_count;
   size_t resample_velocity_steps;
+  const bool m_reflect_boundary;
+  const bool m_reflect_potential;
 
   bool do_conf_tests(pele::Array<double> &x) {
     for (const auto &test : m_conf_tests) {
@@ -68,7 +70,8 @@ class GMC final : public MCBase {
       size_t resample_velocity_steps = 0, double max_timestep = 0.0,
       bool use_random_timestep = false, size_t adaptive_interval = 100,
       double adaptive_factor = 0.9, double adaptive_min_acceptance_ratio = 0.2,
-      double adaptive_max_acceptance_ratio = 0.5);
+      double adaptive_max_acceptance_ratio = 0.5,
+      bool reflect_boundary = true, bool reflect_potential = false);
   ~GMC() override = default;
   void one_iteration() override;
   void check_input() override;
