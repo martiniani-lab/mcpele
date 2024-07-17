@@ -1,5 +1,7 @@
 #include "mcpele/gmc.h"
 
+#include "mcpele/progress.h"
+
 namespace mcpele {
 
 GMC::GMC(std::shared_ptr<pele::BasePotential> potential,
@@ -46,6 +48,19 @@ bool GMC::check_configuration_short(pele::Array<double>& trial_coords) {
     }
   }
   return success;
+}
+
+void GMC::run(const size_t max_iter) {
+  check_input();
+  progress stat(max_iter);
+  while (m_niter < max_iter) {
+    this->one_iteration();
+    if (m_print_progress) {
+      stat.next(m_niter);
+    }
+  }
+  m_niter = 0;
+  m_take_step->resample_velocity();
 }
 
 void GMC::one_iteration() {

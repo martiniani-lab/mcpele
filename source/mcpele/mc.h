@@ -154,13 +154,13 @@ class MCBase {
   MCBase(const std::shared_ptr<pele::BasePotential> &potential,
          const pele::Array<double> &coords, double temperature);
   virtual ~MCBase() {}
+  virtual void run(size_t max_iter) = 0;
   virtual void one_iteration() = 0;
   virtual void check_input() = 0;
   virtual std::shared_ptr<TakeStep> get_takestep() const = 0;
   virtual const std::vector<size_t> get_changed_atoms() const = 0;
   virtual const std::vector<double> get_changed_coords_old() const = 0;
 
-  void run(size_t max_iter);
   void add_action(const std::shared_ptr<Action> &action) {
     m_actions.push_back(action);
   }
@@ -231,6 +231,7 @@ class MC : public MCBase {
   MC(const std::shared_ptr<pele::BasePotential> &potential,
      const pele::Array<double> &coords, double temperature);
   ~MC() override = default;
+  void run(size_t max_iter) override;
   void one_iteration() override;
   void check_input() override;
 

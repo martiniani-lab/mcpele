@@ -7,6 +7,8 @@ cimport numpy as np
 from mcpele.monte_carlo._pele_mc cimport _Cdef_AcceptTest
 from mcpele.monte_carlo._monte_carlo_cpp cimport _Cdef_MCBase
 from mcpele.monte_carlo._monte_carlo_cpp import _BaseMCBaseRunner, Result
+from ctypes import c_size_t as size_t
+from pele.potentials._pele cimport array_wrap_np_size_t, pele_array_to_np_size_t
 
 
 cdef class _Cdef_GMC(_Cdef_MCBase):
@@ -20,6 +22,12 @@ cdef class _Cdef_GMC(_Cdef_MCBase):
     cdef public size_t resample_velocity_steps
     cdef public double max_timestep
     cdef public cbool use_random_timestep
+    cdef public size_t adaptive_interval
+    cdef public double adaptive_factor
+    cdef public double adaptive_min_acceptance_ratio
+    cdef public double adaptive_max_acceptance_ratio
+    cdef public cbool reflect_boundary
+    cdef public cbool reflect_potential
 
     def __init__(self, _pele.BasePotential potential, coords, double temperature, size_t pniter, double timestep,
                  size_t nparticles, size_t ndim, size_t rseed, size_t resample_velocity_steps = 0,
@@ -62,6 +70,30 @@ cdef class _Cdef_GMC(_Cdef_MCBase):
 
     def add_late_conf_test(self, _Cdef_GMCConfTest test):
         self.thisptr.add_late_conf_test(test.thisptr)
+
+    def get_timestep(self):
+        return self.thisptr.get_timestep()
+
+    def set_timestep(self, double timestep):
+        self.thisptr.set_timestep(timestep)
+
+    def get_count(self):
+        return self.thisptr.get_count()
+
+    def set_count(self, size_t count):
+        self.thisptr.set_count(count)
+
+    def get_adaptation_counters(self):
+        return pele_array_to_np_size_t(self.thisptr.get_adaptation_counters())
+
+    def set_adaptation_counters(self, np.ndarray[size_t, ndim=1] input not None):
+        self.thisptr.set_adaptation_counters(array_wrap_np_size_t(input))
+
+    def get_counters(self):
+        return pele_array_to_np_size_t(self.thisptr.get_counters())
+
+    def set_counters(self, np.ndarray[size_t, ndim=1] input not None):
+        self.thisptr.set_counters(array_wrap_np_size_t(input))
 
 
 class _BaseGMCRunner(_Cdef_GMC, _BaseMCBaseRunner, ABC):

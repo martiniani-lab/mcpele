@@ -18,6 +18,7 @@ class GMCTakeStep final : public TakeStep {
   std::normal_distribution<> m_distribution;
   std::uniform_real_distribution<> m_timestep_distribution;
   const bool m_use_random_timestep;
+  size_t m_count;
 
  public:
   GMCTakeStep(double timestep, size_t nparticles, size_t ndim, size_t rseed,
@@ -47,6 +48,10 @@ class GMCTakeStep final : public TakeStep {
   void resample_velocity();
   pele::Array<double> get_velocity() const { return m_velocity.copy(); }
   void set_velocity(const pele::Array<double> &vel) { m_velocity = vel.copy(); }
+  double get_timestep() const { return m_timestep; }
+  void set_timestep(const double input) { m_timestep = input; }
+  size_t get_count() const { return m_count; }
+  void set_count(const size_t input) { m_count = input; }
 };
 
 }  // namespace mcpele

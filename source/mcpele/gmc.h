@@ -73,10 +73,19 @@ class GMC final : public MCBase {
       double adaptive_max_acceptance_ratio = 0.5,
       bool reflect_boundary = true, bool reflect_potential = false);
   ~GMC() override = default;
+  void run(size_t max_iter) override;
   void one_iteration() override;
   void check_input() override;
-  std::shared_ptr<TakeStep> get_takestep() const override { return m_take_step; }
+  std::shared_ptr<TakeStep> get_takestep() const override {
+    return m_take_step;
+  }
 
+  double get_timestep() const { return m_take_step->get_timestep(); }
+  void set_timestep(const double input) const {
+    m_take_step->set_timestep(input);
+  }
+  size_t get_count() const { return m_take_step->get_count(); }
+  void set_count(const size_t input) const { m_take_step->set_count(input); }
   void add_accept_test(const std::shared_ptr<AcceptTest> &accept_test) {
     m_accept_tests.push_back(accept_test);
   }
@@ -91,6 +100,28 @@ class GMC final : public MCBase {
   }
   const std::vector<double> get_changed_coords_old() const override {
     throw std::runtime_error("GMC::get_changed_coords_old: not implemented");
+  }
+  pele::Array<size_t> get_adaptation_counters() const {
+    return m_adaptive_step->get_counters();
+  }
+  void set_adaptation_counters(pele::Array<size_t> const &counters) const {
+    m_adaptive_step->set_counters(counters);
+  }
+  pele::Array<size_t> get_counters() const {
+    pele::Array<size_t> counters(5);
+    counters[0] = m_nitercount;
+    counters[1] = m_accept_count;
+    counters[2] = m_E_reject_count;
+    counters[3] = m_conf_reject_count;
+    counters[4] = m_neval;
+    return counters;
+  }
+  void set_counters(pele::Array<size_t> const &counters) {
+    m_nitercount = counters[0];
+    m_accept_count = counters[1];
+    m_E_reject_count = counters[2];
+    m_conf_reject_count = counters[3];
+    m_neval = counters[4];
   }
 };
 

@@ -23,3 +23,11 @@ cdef extern from "mcpele/gmc.h" namespace "mcpele":
         void add_accept_test(shared_ptr[cppAcceptTest]) except +
         void add_conf_test(shared_ptr[cppGMCConfTest]) except +
         void add_late_conf_test(shared_ptr[cppGMCConfTest]) except +
+        double get_timestep() except +
+        void set_timestep(double) except +
+        size_t get_count() except +
+        void set_count(size_t) except +
+        _pele.Array[size_t] get_adaptation_counters() except +
+        void set_adaptation_counters(_pele.Array[size_t]) except +
+        _pele.Array[size_t] get_counters() except +
+        void set_counters(_pele.Array[size_t]) except +

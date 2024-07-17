@@ -29,18 +29,6 @@ MCBase::MCBase(const std::shared_ptr<pele::BasePotential> &potential,
   std::cout<<"mcrunner potential ptr is "<<_potential<< "\n";*/
 }
 
-void MCBase::run(const size_t max_iter) {
-  check_input();
-  progress stat(max_iter);
-  while (m_niter < max_iter) {
-    this->one_iteration();
-    if (m_print_progress) {
-      stat.next(m_niter);
-    }
-  }
-  m_niter = 0;
-}
-
 void MCBase::set_coordinates(const Array<double> &coords, const double energy) {
   m_coords = coords.copy();
   m_energy = energy;
@@ -62,6 +50,18 @@ MC::MC(const std::shared_ptr<pele::BasePotential> &potential,
       m_take_step(nullptr),
       m_E_reject_count(0),
       m_conf_reject_count(0) {}
+
+void MC::run(const size_t max_iter) {
+  check_input();
+  progress stat(max_iter);
+  while (m_niter < max_iter) {
+    this->one_iteration();
+    if (m_print_progress) {
+      stat.next(m_niter);
+    }
+  }
+  m_niter = 0;
+}
 
 /**
  * perform the configuration tests.  Stop as soon as one of them fails

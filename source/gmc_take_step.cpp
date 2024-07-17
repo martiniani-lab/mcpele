@@ -14,7 +14,8 @@ GMCTakeStep::GMCTakeStep(const double timestep, const size_t nparticles,
       m_generator(rseed),
       m_distribution(0.0, 1.0),
       m_timestep_distribution(0.0, timestep),
-      m_use_random_timestep(use_random_timestep) {
+      m_use_random_timestep(use_random_timestep),
+      m_count(0) {
   if (timestep <= 0.0) {
     throw std::runtime_error(
         "GMCTakeStep::GMCTakeStep: initial timestep must be positive, got " +
@@ -45,6 +46,7 @@ void GMCTakeStep::displace(pele::Array<double>& coords, MCBase* mc) {
   for (size_t i = 0; i < coords.size(); ++i) {
     coords[i] += timestep * m_velocity[i];
   }
+  ++m_count;
 }
 
 void GMCTakeStep::resample_velocity() {
