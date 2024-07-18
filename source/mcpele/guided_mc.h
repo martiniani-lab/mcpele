@@ -70,13 +70,13 @@ class GuidedMC final : public MCBase {
     throw std::runtime_error(
         "GuidedMC::get_changed_coords_old: not implemented");
   }
-  pele::Array<size_t> get_adaption_counters() const {
+  pele::Array<size_t> get_adaptation_counters() const {
     pele::Array<size_t> counters(2);
     counters[0] = m_adaptive_total_steps;
     counters[1] = m_adaptive_accepted_steps;
     return counters;
   }
-  void set_adaption_counters(const pele::Array<size_t> &input) {
+  void set_adaptation_counters(const pele::Array<size_t> &input) {
     m_adaptive_total_steps = input[0];
     m_adaptive_accepted_steps = input[1];
   }
