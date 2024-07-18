@@ -76,10 +76,13 @@ class GMC final : public MCBase {
   void run(size_t max_iter) override;
   void one_iteration() override;
   void check_input() override;
+  // TODO: Is this method really necessary in basinvolume?
   std::shared_ptr<TakeStep> get_takestep() const override {
     return m_take_step;
   }
 
+  // TODO: If this is required in basinvolume, shouldn't that really be in
+  // MCBase?
   double get_timestep() const { return m_take_step->get_timestep(); }
   void set_timestep(const double input) const {
     m_take_step->set_timestep(input);
