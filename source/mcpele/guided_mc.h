@@ -8,11 +8,9 @@ namespace mcpele {
 
 class GuidedMC final : public MCBase {
  public:
-  typedef std::vector<std::shared_ptr<AcceptTest>> accept_t;
   typedef std::vector<std::shared_ptr<GMCConfTest>> conf_t;
 
  protected:
-  accept_t m_accept_tests;
   conf_t m_conf_tests;
   conf_t m_late_conf_tests;
   size_t m_E_reject_count;
@@ -59,9 +57,6 @@ class GuidedMC final : public MCBase {
   void set_timestep(const double input) { m_timestep = input; }
   size_t get_count() const { return m_displace_count; }
   void set_count(const size_t input) { m_displace_count = input; }
-  void add_accept_test(const std::shared_ptr<AcceptTest> &accept_test) {
-    m_accept_tests.push_back(accept_test);
-  }
   void add_conf_test(const std::shared_ptr<GMCConfTest> &conf_test) {
     m_conf_tests.push_back(conf_test);
   }
