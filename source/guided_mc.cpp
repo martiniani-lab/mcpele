@@ -226,10 +226,6 @@ void GuidedMC::check_input() {
       std::cout << "warning: no actions set"
                 << "\n";
     }
-    if (m_accept_tests.size() == 0) {
-      std::cout << "warning: no accept tests set"
-                << "\n";
-    }
   }
 }
 
