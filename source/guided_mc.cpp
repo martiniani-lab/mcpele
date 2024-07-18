@@ -65,6 +65,7 @@ GuidedMC::GuidedMC(std::shared_ptr<pele::BasePotential> potential,
         "and 1, got " +
         std::to_string(adaptive_max_acceptance_ratio));
   }
+  m_use_energy_change = false;
   m_forward = m_random_bool_distribution(m_generator);
 }
 
