@@ -13,7 +13,7 @@ GMCTakeStep::GMCTakeStep(const double timestep, const size_t nparticles,
       m_seed(rseed),
       m_generator(rseed),
       m_distribution(0.0, 1.0),
-      m_timestep_distribution(0.0, timestep),
+      m_timestep_distribution(0.0, 1.0),
       m_use_random_timestep(use_random_timestep),
       m_count(0) {
   if (timestep <= 0.0) {
@@ -41,8 +41,9 @@ void GMCTakeStep::displace(pele::Array<double>& coords, MCBase* mc) {
   if (m_changed_coords_old.size() != 0) {
     std::copy(coords.begin(), coords.end(), m_changed_coords_old.begin());
   }
-  const auto timestep =
-      m_use_random_timestep ? m_timestep_distribution(m_generator) : m_timestep;
+  const auto timestep = m_use_random_timestep
+                            ? m_timestep_distribution(m_generator) * m_timestep
+                            : m_timestep;
   for (size_t i = 0; i < coords.size(); ++i) {
     coords[i] += timestep * m_velocity[i];
   }

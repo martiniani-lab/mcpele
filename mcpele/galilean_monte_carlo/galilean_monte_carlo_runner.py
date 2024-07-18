@@ -54,6 +54,7 @@ class GalileanMonteCarloRunner(_BaseGMCRunner):
 
 
 if __name__ == '__main__':
+    """
     initial_coords = np.array([0.0, 0.0])
     action = RecordCoordsTimeseries(2)
     side_length = 1.0
@@ -64,7 +65,9 @@ if __name__ == '__main__':
         nparticles=1, ndim=len(initial_coords), resample_velocity_steps=resample_velocity_steps, max_timestep=0.0,
         use_random_timestep=False, conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),),
         actions=(action,), seeds={"metropolis": 1, "takestep": 10}, adaptive_iterations=0, adaptive_interval=100,
-        adaptive_factor=0.9, adaptive_acceptance=0.5)
+        adaptive_factor=0.9, adaptive_acceptance=0.5, reflect_boundary=True, reflect_potential=True)
+    gmc.get_counters()
+    exit()
     gmc.run()
     timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
     plt.figure()
@@ -76,27 +79,115 @@ if __name__ == '__main__':
     plt.gca().set_aspect("equal")
     plt.savefig("ExampleGalileanMonteCarloRunner.pdf")
     plt.close()
+    """
 
-    initial_coords = np.array([0.0, 0.0])
+    plt.rcParams.update({
+        "text.usetex": True,
+        "font.family": "serif",
+    })
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(1.1*4.9, 1.1*1.5))
+    potential_k = 0.000001
+    # Favorite 10, 5
+    seeds = {"metropolis": 1, "takestep": 29}
+    initial_coords = np.array([0.2, 0.1])
+    iterations = 40
+    resample_velocity_steps = 2500
+
     action = RecordCoordsTimeseries(2)
     side_length = 1.0
-    iterations = 100
-    resample_velocity_steps = 50
     gmc = GalileanMonteCarloRunner(
-        potential=Harmonic(np.array([0.0, 0.0]), 15.0, bdim=2, com=False), coords=initial_coords, temperature=1.0,
+        potential=Harmonic(np.array([0.0, 0.0]), potential_k, bdim=2, com=False), coords=initial_coords, temperature=1.0,
         pniter=iterations, timestep=0.1, nparticles=1, ndim=len(initial_coords),
         resample_velocity_steps=resample_velocity_steps, max_timestep=0.0, use_random_timestep=False,
         conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
-        seeds={"metropolis": 1, "takestep": 10}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
-        adaptive_acceptance=0.5)
+        seeds=seeds, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
+        adaptive_acceptance=0.5, reflect_boundary=True, reflect_potential=False)
     gmc.run()
     timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
-    plt.figure()
-    plt.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
-    for r in range(0, iterations, resample_velocity_steps):
-        plt.plot(timeseries[r, 0], timeseries[r, 1], marker="o", color="red")
-    plt.xlim(-side_length / 2.0, side_length / 2.0)
-    plt.ylim(-side_length / 2.0, side_length / 2.0)
-    plt.gca().set_aspect("equal")
-    plt.savefig("ExampleGalileanMonteCarloRunnerWithBias.pdf")
+    ax1.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
+    ax1.plot(timeseries[0, 0], timeseries[0, 1], marker="o", color="C2")
+    for r in range(resample_velocity_steps, iterations, resample_velocity_steps):
+        ax1.plot(timeseries[r, 0], timeseries[r, 1], marker="o", color="C3")
+    ax1.plot([0.0], [0.0], marker="x", color="grey", zorder=1)
+    ax1.set_xlim(-side_length / 2.0, side_length / 2.0)
+    ax1.set_ylim(-side_length / 2.0, side_length / 2.0)
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+    ax1.text(0.02, 0.97, "(a)", fontsize=8, horizontalalignment='left', verticalalignment='top',
+             transform=ax1.transAxes)
+    ax1.arrow(timeseries[0, 0] + 0.05, timeseries[0, 1],
+              timeseries[1, 0] - timeseries[0, 0],
+              timeseries[1, 1] - timeseries[0, 1],
+              width=0.00001, length_includes_head=True, head_width=0.01)
+    ax1.text((timeseries[0, 0] + timeseries[1, 0]) / 2.0 + 0.06,
+             (timeseries[0, 1] + timeseries[1, 1]) / 2.0, "v", fontsize=8, horizontalalignment='left',
+             verticalalignment="center")
+    ax1.set_aspect("equal")
+
+    action = RecordCoordsTimeseries(2)
+    side_length = 1.0
+    gmc = GalileanMonteCarloRunner(
+        potential=Harmonic(np.array([0.0, 0.0]), potential_k, bdim=2, com=False), coords=initial_coords, temperature=1.0,
+        pniter=iterations, timestep=0.1, nparticles=1, ndim=len(initial_coords),
+        resample_velocity_steps=resample_velocity_steps, max_timestep=0.0, use_random_timestep=False,
+        conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
+        seeds=seeds, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
+        adaptive_acceptance=0.5, reflect_boundary=False, reflect_potential=True)
+    gmc.run()
+    timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
+    ax2.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
+    ax2.plot(timeseries[0, 0], timeseries[0, 1], marker="o", color="C2")
+    for r in range(resample_velocity_steps, iterations, resample_velocity_steps):
+        ax2.plot(timeseries[r, 0], timeseries[r, 1], marker="o", color="C3")
+    ax2.plot([0.0], [0.0], marker="x", color="grey", zorder=1)
+    ax2.set_xlim(-side_length / 2.0, side_length / 2.0)
+    ax2.set_ylim(-side_length / 2.0, side_length / 2.0)
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+    ax2.text(0.02, 0.97, "(b)", fontsize=8, horizontalalignment='left', verticalalignment='top',
+             transform=ax2.transAxes)
+    ax2.arrow(timeseries[0, 0] + 0.05, timeseries[0, 1],
+              timeseries[1, 0] - timeseries[0, 0],
+              timeseries[1, 1] - timeseries[0, 1],
+              width=0.00001, length_includes_head=True, head_width=0.01)
+    ax2.text((timeseries[0, 0] + timeseries[1, 0]) / 2.0 + 0.06,
+             (timeseries[0, 1] + timeseries[1, 1]) / 2.0, "v", fontsize=8, horizontalalignment='left',
+             verticalalignment="center")
+    ax2.set_aspect("equal")
+
+    action = RecordCoordsTimeseries(2)
+    side_length = 1.0
+    gmc = GalileanMonteCarloRunner(
+        potential=Harmonic(np.array([0.0, 0.0]), potential_k, bdim=2, com=False), coords=initial_coords, temperature=1.0,
+        pniter=iterations, timestep=0.1, nparticles=1, ndim=len(initial_coords),
+        resample_velocity_steps=resample_velocity_steps, max_timestep=0.0, use_random_timestep=False,
+        conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
+        seeds=seeds, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
+        adaptive_acceptance=0.5, reflect_boundary=True, reflect_potential=True)
+    gmc.run()
+    timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
+    ax3.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
+    ax3.plot(timeseries[0, 0], timeseries[0, 1], marker="o", color="C2")
+    for r in range(resample_velocity_steps, iterations, resample_velocity_steps):
+        ax3.plot(timeseries[r, 0], timeseries[r, 1], marker="o", color="C3")
+    ax3.plot([0.0], [0.0], marker="x", color="grey", zorder=1)
+    ax3.set_xlim(-side_length / 2.0, side_length / 2.0)
+    ax3.set_ylim(-side_length / 2.0, side_length / 2.0)
+    ax3.set_xticks([])
+    ax3.set_yticks([])
+    ax3.text(0.02, 0.97, "(c)", fontsize=8, horizontalalignment='left', verticalalignment='top',
+             transform=ax3.transAxes)
+    ax3.arrow(timeseries[0, 0] + 0.05, timeseries[0, 1],
+              timeseries[1, 0] - timeseries[0, 0],
+              timeseries[1, 1] - timeseries[0, 1],
+              width=0.00001, length_includes_head=True, head_width=0.01)
+    ax3.text((timeseries[0, 0] + timeseries[1, 0]) / 2.0 + 0.06,
+             (timeseries[0, 1] + timeseries[1, 1]) / 2.0, "v", fontsize=8, horizontalalignment='left',
+             verticalalignment="center")
+    ax3.set_aspect("equal")
+
+    fig.subplots_adjust(wspace=0, hspace=1.1*0.2)
+    #plt.tight_layout()
+    plt.savefig("Test2.pdf", bbox_inches="tight")
     plt.close()
