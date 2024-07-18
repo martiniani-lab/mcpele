@@ -52,7 +52,7 @@ if __name__ == '__main__':
     initial_coords = np.array([0.0, 0.0])
     action = RecordCoordsTimeseries(2)
     side_length = 1.0
-    iterations = 2000
+    iterations = 2000  # For large width, 100 iterations with standard_deviation=0.1
     gmc = GuidedMonteCarloRunner(
         potential=NullPotential(), coords=initial_coords, temperature=1.0, pniter=iterations, timestep=0.1,
         standard_deviation=0.03, normalize_conf_gradient=True, max_timestep=0.0, conftests=(),
@@ -65,6 +65,8 @@ if __name__ == '__main__':
     plt.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
     plt.xlim(-side_length / 2.0, side_length / 2.0)
     plt.ylim(-side_length / 2.0, side_length / 2.0)
+    plt.plot([-0.5, 0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
+    plt.plot([0.5, -0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
     plt.gca().set_aspect("equal")
     plt.savefig("ExampleGuidedMonteCarloRunner.pdf")
     plt.close()
@@ -86,6 +88,8 @@ if __name__ == '__main__':
     plt.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
     plt.xlim(-side_length / 2.0, side_length / 2.0)
     plt.ylim(-side_length / 2.0, side_length / 2.0)
+    plt.plot([-0.5, 0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
+    plt.plot([0.5, -0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
     plt.gca().set_aspect("equal")
     plt.savefig("ExampleGuidedMonteCarloRunnerWithBias.pdf")
     plt.close()
