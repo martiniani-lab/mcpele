@@ -13,7 +13,10 @@ FindLowestEigenvalue::FindLowestEigenvalue(
       m_ranvec((ranvec.copy() /= norm(ranvec))),
       m_lbfgs(m_lowesteigpot, m_ranvec.copy()) {
   if (std::isinf(double(1) / norm(ranvec))) {
-    throw std::runtime_error("FindLowestEigenvalue: 1/norm(ranvec) is isinf");
+    std::cerr << "The random vector is a zero vector, using a 1.0 vec"
+              << std::endl;
+    m_ranvec = pele::Array<double>(ranvec.size(), 1.0);
+    m_ranvec /= norm(m_ranvec);
   }
   m_lbfgs.set_max_iter(lbfgsniter);
   m_lowesteigpot->set_x_opt(m_lbfgs.get_x());
