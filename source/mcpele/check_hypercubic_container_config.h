@@ -8,11 +8,17 @@ namespace mcpele {
 
 class CheckHypercubicContainerConfig final : public GMCConfTest {
  protected:
-  double side_length_over_two;
+  const double side_length_over_two;
+  const double side_length;
+  const bool use_powered_cosine_sum_gradient;
 
  public:
-  explicit CheckHypercubicContainerConfig(const double side_length)
-      : side_length_over_two(side_length / 2.0) {
+  explicit CheckHypercubicContainerConfig(
+      const double side_length,
+      const bool use_powered_cosine_sum_gradient = false)
+      : side_length_over_two(side_length / 2.0),
+        side_length(side_length),
+        use_powered_cosine_sum_gradient(use_powered_cosine_sum_gradient) {
     if (side_length <= 0.0) {
       throw std::runtime_error("side length must be positive");
     }
