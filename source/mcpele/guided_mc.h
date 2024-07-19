@@ -35,6 +35,8 @@ class GuidedMC final : public MCBase {
   size_t m_adaptive_total_steps;
   size_t m_adaptive_accepted_steps;
 
+  const double m_standard_deviation_timestep_ratio;
+
   pele::Array<double> get_conf_gradient(pele::Array<double> &coords);
 
  public:

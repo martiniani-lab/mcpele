@@ -29,7 +29,8 @@ GuidedMC::GuidedMC(std::shared_ptr<pele::BasePotential> potential,
       m_adaptive_interval(adaptive_interval),
       m_adaptive_factor(adaptive_factor),
       m_adaptive_min_acceptance_ratio(adaptive_min_acceptance_ratio),
-      m_adaptive_max_acceptance_ratio(adaptive_max_acceptance_ratio) {
+      m_adaptive_max_acceptance_ratio(adaptive_max_acceptance_ratio),
+      m_standard_deviation_timestep_ratio(standard_deviation / timestep) {
   if (timestep <= 0.0) {
     throw std::runtime_error(
         "GuidedMC::GuidedMC: initial timestep must be positive, got " +
@@ -169,14 +170,18 @@ void GuidedMC::one_iteration() {
       m_adaptive_total_steps = 0;
       m_adaptive_accepted_steps = 0;
       if (acceptance_fraction < m_adaptive_min_acceptance_ratio) {
-        // increase acceptance by decreasing timestep
+        // increase acceptance by decreasing timestep and standard deviation
         m_timestep *= m_adaptive_factor;
+        m_standard_deviation *= m_adaptive_factor;
       } else if (acceptance_fraction > m_adaptive_max_acceptance_ratio) {
-        // decrease acceptance by increasing timestep
+        // decrease acceptance by increasing timestep and standard deviation
         if (m_max_timestep == 0.0 or m_timestep < m_max_timestep) {
           m_timestep /= m_adaptive_factor;
+          m_standard_deviation /= m_adaptive_factor;
           if (m_timestep > m_max_timestep) {
             m_timestep = m_max_timestep;
+            m_standard_deviation =
+                m_standard_deviation_timestep_ratio * m_timestep;
           }
         }
       }
