@@ -31,11 +31,9 @@ class GMCTakeStep final : public TakeStep {
   }
   void decrease_acceptance(const double factor) override {
     assert(factor < 1.0 && factor > 0.0);
-    if (m_max_timestep == 0.0 || m_timestep < m_max_timestep) {
-      m_timestep /= factor;
-      if (m_timestep > m_max_timestep) {
-        m_timestep = m_max_timestep;
-      }
+    m_timestep /= factor;
+    if (m_max_timestep != 0.0 && m_timestep > m_max_timestep) {
+      m_timestep = m_max_timestep;
     }
   }
   [[nodiscard]] const std::vector<size_t> get_changed_atoms() const override {

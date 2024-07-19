@@ -175,15 +175,19 @@ void GuidedMC::one_iteration() {
         m_standard_deviation *= m_adaptive_factor;
       } else if (acceptance_fraction > m_adaptive_max_acceptance_ratio) {
         // decrease acceptance by increasing timestep and standard deviation
-        if (m_max_timestep == 0.0 or m_timestep < m_max_timestep) {
-          m_timestep /= m_adaptive_factor;
-          m_standard_deviation /= m_adaptive_factor;
-          if (m_timestep > m_max_timestep) {
-            m_timestep = m_max_timestep;
-            m_standard_deviation =
-                m_standard_deviation_timestep_ratio * m_timestep;
-          }
+        m_timestep /= m_adaptive_factor;
+        m_standard_deviation /= m_adaptive_factor;
+        if (m_max_timestep != 0.0 and m_timestep > m_max_timestep) {
+          m_timestep = m_max_timestep;
+          m_standard_deviation =
+              m_standard_deviation_timestep_ratio * m_timestep;
         }
+      }
+      if (get_iterations_count() + m_adaptive_interval > m_report_steps) {
+        std::cout << "GuidedMC: final adaptive acceptance fraction, timestep, "
+                     "and standard deviation: "
+                  << acceptance_fraction << " " << m_timestep << " "
+                  << m_standard_deviation << std::endl;
       }
     }
   }
