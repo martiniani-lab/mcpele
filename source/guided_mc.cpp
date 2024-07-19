@@ -91,7 +91,9 @@ pele::Array<double> GuidedMC::get_conf_gradient(pele::Array<double> &coords) {
     conf_gradient += test->gmc_gradient(coords, this);
   }
   if (m_normalize_conf_gradient) {
-    conf_gradient /= norm(conf_gradient);
+    if (const auto n = norm(conf_gradient); n != 0.0) {
+      conf_gradient /= n;
+    }
   }
   if (not m_forward) {
     conf_gradient *= -1.0;
