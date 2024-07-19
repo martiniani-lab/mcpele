@@ -1,5 +1,6 @@
 # distutils: language = C++
 
+from libcpp cimport bool as cbool
 from pele.potentials._pele cimport shared_ptr
 from mcpele.monte_carlo._conf_test_cpp cimport cppCheckSphericalContainerConfig, cppCheckHypercubicContainerConfig
 from mcpele.monte_carlo._pele_mc cimport _Cdef_ConfTest, cppConfTest
@@ -26,8 +27,9 @@ class CheckSphericalContainerConfigGMC(_Cdef_CheckSphericalContainerConfigGMC):
 
 cdef class _Cdef_CheckHypercubicContainerConfigGMC(_Cdef_GMCConfTest):
     cdef cppCheckHypercubicContainerConfig* newptr
-    def __cinit__(self, side_length):
-        self.thisptr = shared_ptr[cppGMCConfTest](<cppGMCConfTest*> new cppCheckHypercubicContainerConfig(side_length))
+    def __cinit__(self, double side_length, cbool use_powered_cosine_sum_gradient = False):
+        self.thisptr = shared_ptr[cppGMCConfTest](<cppGMCConfTest*> new cppCheckHypercubicContainerConfig(
+            side_length, use_powered_cosine_sum_gradient))
         self.newptr = <cppCheckHypercubicContainerConfig*> self.thisptr.get()
 
 

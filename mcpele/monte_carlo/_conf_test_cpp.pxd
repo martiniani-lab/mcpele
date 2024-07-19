@@ -11,7 +11,7 @@ cdef extern from "mcpele/check_spherical_container_config.h" namespace "mcpele":
 
 cdef extern from "mcpele/check_hypercubic_container_config.h" namespace "mcpele":
     cdef cppclass cppCheckHypercubicContainerConfig "mcpele::CheckHypercubicContainerConfig":
-        cppCheckHypercubicContainerConfig(double) except +
+        cppCheckHypercubicContainerConfig(double, cbool) except +
 
 cdef extern from "mcpele/conf_test_OR.h" namespace "mcpele":
     cdef cppclass cppConfTestOR "mcpele::ConfTestOR":
