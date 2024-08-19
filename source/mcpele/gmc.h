@@ -17,6 +17,10 @@ class GMCConfTest : public ConfTest {
 };
 
 class GMC final : public MCBase {
+ // TODO: This class does not work with basinvolume at the moment since the velocity is not backed up in get_counters
+ // or so. Thus, when the number of PTWorkers is smaller than the number of GMC workers, the velocities are not
+ // properly restored. This is a problem with the GMC class and not with the basinvolume class. If this should be
+ // merged, this has to be generalized.
  public:
   typedef std::vector<std::shared_ptr<AcceptTest>> accept_t;
   typedef std::vector<std::shared_ptr<GMCConfTest>> conf_t;
