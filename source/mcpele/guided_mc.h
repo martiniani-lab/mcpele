@@ -55,8 +55,22 @@ class GuidedMC final : public MCBase {
     throw std::runtime_error("GuidedMC::get_takestep: not implemented");
   }
 
-  double get_timestep() const { return m_timestep; }
-  void set_timestep(const double input) { m_timestep = input; }
+  double get_timestep() const {
+    if (m_forward) {
+      return m_timestep;
+    }
+    return -m_timestep;
+  }
+  void set_timestep(const double input) {
+    if (input > 0.0) {
+      m_forward = true;
+      m_timestep = input;
+    } else {
+      m_forward = false;
+      m_timestep = -input;
+    }
+    m_standard_deviation = m_standard_deviation_timestep_ratio * m_timestep;
+  }
   size_t get_count() const { return m_displace_count; }
   void set_count(const size_t input) { m_displace_count = input; }
   void add_conf_test(const std::shared_ptr<GMCConfTest> &conf_test) {

@@ -126,6 +126,7 @@ void GuidedMC::one_iteration() {
     ++m_conf_reject_count;
   } else {
     // Metropolis-Hastings accept test
+    ++m_neval;
     m_trial_energy = compute_energy(m_trial_coords);
     const double energy_exp_argument =
         (m_energy - m_trial_energy) / m_temperature;
