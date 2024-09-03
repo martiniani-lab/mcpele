@@ -45,3 +45,9 @@ pele::Array<double> mcpele::CheckHypercubicContainerConfig::gmc_gradient(
   powered_cosine_sum.get_energy_gradient(coords, gradient);
   return -gradient;
 }
+
+pele::Array<double> mcpele::CheckHypercubicContainerConfig::gmc_hessian(
+    pele::Array<double>& coords, MCBase* mc) {
+  throw std::runtime_error(
+        "CheckHypercubicContainerConfig::gmc_hessian: not implemented");
+}

@@ -30,6 +30,8 @@ class CheckHypercubicContainerConfig final : public GMCConfTest {
   }
   pele::Array<double> gmc_gradient(pele::Array<double> &coords,
                                    MCBase *mc) override;
+  pele::Array<double> gmc_hessian(pele::Array<double> &coords,
+                                  MCBase *mc) override;
   ~CheckHypercubicContainerConfig() override = default;
 };
 

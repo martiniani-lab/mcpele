@@ -1,7 +1,7 @@
 #include "mcpele/guided_mc.h"
-#include <pele/vecn.hpp>
 
 #include "mcpele/progress.h"
+#include "pele/eigen_interface.hpp"
 
 namespace mcpele {
 
@@ -9,8 +9,8 @@ GuidedMC::GuidedMC(std::shared_ptr<pele::BasePotential> potential,
                    const pele::Array<double> &coords, const double temperature,
                    const double timestep, const double standard_deviation,
                    const size_t rseed, const bool normalize_conf_gradient,
-                   const double max_timestep, const size_t adaptive_interval,
-                   const double adaptive_factor,
+                   const bool use_hessian, const double max_timestep,
+                   const size_t adaptive_interval, const double adaptive_factor,
                    const double adaptive_min_acceptance_ratio,
                    const double adaptive_max_acceptance_ratio)
     : MCBase(std::move(potential), coords, temperature),
@@ -20,6 +20,7 @@ GuidedMC::GuidedMC(std::shared_ptr<pele::BasePotential> potential,
       m_timestep(timestep),
       m_standard_deviation(standard_deviation),
       m_normalize_conf_gradient(normalize_conf_gradient),
+      m_use_hessian(use_hessian),
       m_seed(rseed),
       m_generator(rseed),
       m_normal_distribution(0.0, 1.0),
@@ -90,6 +91,38 @@ pele::Array<double> GuidedMC::get_conf_gradient(pele::Array<double> &coords) {
   }
   for (const auto &test : m_late_conf_tests) {
     conf_gradient += test->gmc_gradient(coords, this);
+  }
+
+  if (m_use_hessian) {
+    pele::Array conf_hessian(coords.size(), 0.0);
+    for (const auto &test : m_conf_tests) {
+      conf_hessian += test->gmc_hessian(coords, this);
+    }
+    for (const auto &test : m_late_conf_tests) {
+      conf_hessian += test->gmc_hessian(coords, this);
+    }
+    // Code following pele/optimizer.hpp.
+    auto eigen_gradient = Eigen::VectorXd(conf_gradient.size());
+    eig_eq_pele(eigen_gradient, conf_gradient);
+    auto eigen_hessian =
+        Eigen::MatrixXd(conf_hessian.size(), conf_hessian.size());
+    eig_mat_eq_pele(eigen_hessian, conf_hessian);
+
+    const Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> es(eigen_hessian);
+    const auto eigenvalues = es.eigenvalues();
+    const auto eigenvectors = es.eigenvectors();
+    double abs_min_eigenvalue = eigenvalues.minCoeff();
+    if (abs_min_eigenvalue < 0.0) {
+      abs_min_eigenvalue = -abs_min_eigenvalue;
+    } else {
+      abs_min_eigenvalue = 0.0;
+    }
+    const double average_eigenvalue = eigenvalues.mean();
+    const double offset = std::max(1.0e-1 * std::abs(average_eigenvalue),
+                             2.0 * abs_min_eigenvalue);
+    eigen_hessian.diagonal().array() += offset;
+    Eigen::VectorXd newton_step = eigen_hessian.ldlt().solve(eigen_gradient);
+    pele_eq_eig(conf_gradient, newton_step);
   }
   if (m_normalize_conf_gradient) {
     if (const auto n = norm(conf_gradient); n != 0.0) {

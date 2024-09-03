@@ -19,6 +19,7 @@ cdef class _Cdef_GuidedMC(_Cdef_MCBase):
     cdef public double standard_deviation
     cdef public size_t rseed
     cdef public cbool normalize_conf_gradient
+    cdef public cbool use_hessian
     cdef public double max_timestep
     cdef public size_t adaptive_interval
     cdef public double adaptive_factor
@@ -27,8 +28,9 @@ cdef class _Cdef_GuidedMC(_Cdef_MCBase):
 
     def __init__(self, _pele.BasePotential potential, coords, double temperature, size_t pniter, double timestep,
                  double standard_deviation, size_t rseed, cbool normalize_conf_gradient = True,
-                 double max_timestep = 0.0, size_t adaptive_interval = 100, double adaptive_factor = 0.9,
-                 double adaptive_min_acceptance_ratio = 0.2, double adaptive_max_acceptance_ratio = 0.5):
+                 cbool use_hessian = False, double max_timestep = 0.0, size_t adaptive_interval = 100,
+                 double adaptive_factor = 0.9, double adaptive_min_acceptance_ratio = 0.2,
+                 double adaptive_max_acceptance_ratio = 0.5):
         cdef np.ndarray[double, ndim=1] cstart_coords = np.array(coords, dtype=float)
         self.potential = potential
         self.start_coords = cstart_coords
@@ -38,6 +40,7 @@ cdef class _Cdef_GuidedMC(_Cdef_MCBase):
         self.standard_deviation = standard_deviation
         self.rseed = rseed
         self.normalize_conf_gradient = normalize_conf_gradient
+        self.use_hessian = use_hessian
         self.max_timestep = max_timestep
         self.adaptive_interval = adaptive_interval
         self.adaptive_factor = adaptive_factor
@@ -47,8 +50,8 @@ cdef class _Cdef_GuidedMC(_Cdef_MCBase):
             <cppMCBase *> new cppGuidedMC(self.potential.thisptr,
                                      _pele.Array[double](<double *> cstart_coords.data, cstart_coords.size),
                                      self.temperature, self.timestep, self.standard_deviation, self.rseed,
-                                     self.normalize_conf_gradient, self.max_timestep, self.adaptive_interval,
-                                     self.adaptive_factor, self.adaptive_min_acceptance_ratio,
+                                     self.normalize_conf_gradient, self.use_hessian, self.max_timestep,
+                                     self.adaptive_interval, self.adaptive_factor, self.adaptive_min_acceptance_ratio,
                                      self.adaptive_max_acceptance_ratio))
         self.thisptr = <cppGuidedMC *> self.baseptr.get()
 
@@ -85,10 +88,10 @@ cdef class _Cdef_GuidedMC(_Cdef_MCBase):
 
 class _BaseGuidedMCRunner(_Cdef_GuidedMC, _BaseMCBaseRunner, ABC):
     def __init__(self, potential, coords, temperature, niter, timestep, standard_deviation, rseed,
-                 normalize_conf_gradient = True, max_timestep = 0.0, adaptive_interval = 100, adaptive_factor = 0.9,
-                 adaptive_min_acceptance_ratio = 0.2, adaptive_max_acceptance_ratio = 0.5):
+                 normalize_conf_gradient = True, use_hessian = False, max_timestep = 0.0, adaptive_interval = 100,
+                 adaptive_factor = 0.9, adaptive_min_acceptance_ratio = 0.2, adaptive_max_acceptance_ratio = 0.5):
         super().__init__(potential, coords, temperature, niter, timestep, standard_deviation, rseed,
-                         normalize_conf_gradient, max_timestep, adaptive_interval, adaptive_factor,
+                         normalize_conf_gradient, use_hessian, max_timestep, adaptive_interval, adaptive_factor,
                          adaptive_min_acceptance_ratio, adaptive_max_acceptance_ratio)
         # TODO: THIS FEELS WEIRD
         self.ndim = len(coords)

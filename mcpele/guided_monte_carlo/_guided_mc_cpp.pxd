@@ -11,7 +11,7 @@ from mcpele.galilean_monte_carlo._gmc_cpp cimport cppGMCConfTest
 cdef extern from "mcpele/guided_mc.h" namespace "mcpele":
     cdef cppclass cppGuidedMC "mcpele::GuidedMC"(cppMCBase):
         cppGuidedMC(shared_ptr[_pele.cBasePotential], _pele.Array[double] &, double, double, double, size_t, cbool,
-                    double, size_t, double, double, double) except +
+                    cbool, double, size_t, double, double, double) except +
         void add_conf_test(shared_ptr[cppGMCConfTest]) except +
         void add_late_conf_test(shared_ptr[cppGMCConfTest]) except +
         double get_timestep() except +

@@ -14,6 +14,8 @@ class GMCConfTest : public ConfTest {
   ~GMCConfTest() override = default;
   virtual pele::Array<double> gmc_gradient(pele::Array<double> &coords,
                                            MCBase *mc) = 0;
+  virtual pele::Array<double> gmc_hessian(pele::Array<double> &coords,
+                                          MCBase *mc) = 0;
 };
 
 class GMC final : public MCBase {

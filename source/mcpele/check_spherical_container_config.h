@@ -22,6 +22,9 @@ class CheckSphericalContainerConfig : public GMCConfTest {
     grad *= -(1.0);
     return grad;
   }
+  pele::Array<double> gmc_hessian(pele::Array<double> &coords, MCBase *mc) {
+    throw std::runtime_error("Hessian not implemented for spherical container");
+  }
   virtual ~CheckSphericalContainerConfig() {}
 };
 

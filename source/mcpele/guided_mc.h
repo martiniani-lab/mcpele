@@ -20,6 +20,7 @@ class GuidedMC final : public MCBase {
   double m_standard_deviation;
   bool m_forward;
   const bool m_normalize_conf_gradient;
+  const bool m_use_hessian;
 
   const size_t m_seed;
   std::mt19937_64 m_generator;
@@ -43,8 +44,9 @@ class GuidedMC final : public MCBase {
   GuidedMC(std::shared_ptr<pele::BasePotential> potential,
            const pele::Array<double> &coords, double temperature,
            double timestep, double standard_deviation, size_t rseed,
-           bool normalize_conf_gradient = true, double max_timestep = 0.0,
-           size_t adaptive_interval = 100, double adaptive_factor = 0.9,
+           bool normalize_conf_gradient = true, bool use_hessian = false,
+           double max_timestep = 0.0, size_t adaptive_interval = 100,
+           double adaptive_factor = 0.9,
            double adaptive_min_acceptance_ratio = 0.2,
            double adaptive_max_acceptance_ratio = 0.5);
   ~GuidedMC() override = default;
