@@ -2,14 +2,17 @@ from typing import Optional, Sequence
 import matplotlib.pyplot as plt
 import numpy as np
 from pele.optimize._pele_opt import GradientOptimizer
+from pele.optimize import CVODEBDFOptimizer
 from pele.potentials._pele import BasePotential
 from pele.potentials import Harmonic
+from pele.potentials import PoweredCosineSum
 from mcpele.monte_carlo._pele_mc import _Cdef_Action
 from mcpele.monte_carlo import NullPotential, MetropolisTest, RecordCoordsTimeseries
 from mcpele.galilean_monte_carlo import CheckHypercubicContainerConfigGMC
 from mcpele.galilean_monte_carlo._gmc_cpp import _Cdef_GMCConfTest
 from mcpele.guided_monte_carlo import _BaseGuidedMCOptimizerRunner
 from basinvolume.monte_carlo import CheckHyperCubicContainerGMC as BVCheckHyperCubicContainerGMC
+from basinvolume.utils import INVERSE_POWER_CVODE_95_ACC
 
 
 class GuidedMonteCarloOptimizerRunner(_BaseGuidedMCOptimizerRunner):
@@ -55,9 +58,11 @@ if __name__ == '__main__':
     action = RecordCoordsTimeseries(2)
     side_length = 1.0
     iterations = 100  # For large width, 100 iterations with standard_deviation=0.1
+    optimizer_potential = PoweredCosineSum(2, 1.0, 0.5, 1.0)
+    optimizer = CVODEBDFOptimizer(optimizer_potential, initial_coords, tol=1e-10, nsteps=1e5, atol=1e-7, rtol=1e-7)
     gmc = GuidedMonteCarloOptimizerRunner(
-        potential=NullPotential(), coords=initial_coords, temperature=1.0, pniter=iterations, timestep=0.1,
-        standard_deviation=0.03, normalize_conf_gradient=True, max_timestep=0.0, conftests=(),
+        potential=NullPotential(), coords=initial_coords, temperature=1.0, pniter=iterations,
+        optimizer=optimizer, optimizer_niter=50, standard_deviation=0.03, max_standard_deviation=0.0, conftests=(),
         late_conftests=(BVCheckHyperCubicContainerGMC(np.array([0.0, 0.0]), side_length, 2, True),), actions=(action,),
         seeds={"guided_mc": 1}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
         adaptive_acceptance=0.5)
@@ -70,52 +75,5 @@ if __name__ == '__main__':
     plt.plot([-0.5, 0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
     plt.plot([0.5, -0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
     plt.gca().set_aspect("equal")
-    plt.savefig("Test2.pdf")
-    plt.close()
-
-    exit()
-
-    initial_coords = np.array([0.0, 0.0])
-    action = RecordCoordsTimeseries(2)
-    side_length = 1.0
-    iterations = 2000  # For large width, 100 iterations with standard_deviation=0.1
-    gmc = GuidedMonteCarloRunner(
-        potential=NullPotential(), coords=initial_coords, temperature=1.0, pniter=iterations, timestep=0.1,
-        standard_deviation=0.03, normalize_conf_gradient=True, max_timestep=0.0, conftests=(),
-        late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
-        seeds={"guided_mc": 1}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
-        adaptive_acceptance=0.5)
-    gmc.run()
-    timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
-    plt.figure()
-    plt.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
-    plt.xlim(-side_length / 2.0, side_length / 2.0)
-    plt.ylim(-side_length / 2.0, side_length / 2.0)
-    plt.plot([-0.5, 0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
-    plt.plot([0.5, -0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
-    plt.gca().set_aspect("equal")
-    plt.savefig("ExampleGuidedMonteCarloRunner.pdf")
-    plt.close()
-
-    initial_coords = np.array([0.0, 0.0])
-    action = RecordCoordsTimeseries(2)
-    side_length = 1.0
-    iterations = 2000
-    resample_velocity_steps = 50
-    gmc = GuidedMonteCarloRunner(
-        potential=Harmonic(np.array([0.0, 0.0]), 15.0, bdim=2, com=False), coords=initial_coords, temperature=1.0,
-        pniter=iterations, timestep=0.1, standard_deviation=0.03, normalize_conf_gradient=True, max_timestep=0.0,
-        conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
-        seeds={"guided_mc": 1}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
-        adaptive_acceptance=0.5)
-    gmc.run()
-    timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
-    plt.figure()
-    plt.plot(timeseries[:, 0], timeseries[:, 1], marker=".")
-    plt.xlim(-side_length / 2.0, side_length / 2.0)
-    plt.ylim(-side_length / 2.0, side_length / 2.0)
-    plt.plot([-0.5, 0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
-    plt.plot([0.5, -0.5], [-0.5, 0.5], color="k", zorder=-1, alpha=0.5)
-    plt.gca().set_aspect("equal")
-    plt.savefig("ExampleGuidedMonteCarloRunnerWithBias.pdf")
+    plt.savefig("ExampleGuidedMonteCarloOptimizerRunner.pdf")
     plt.close()
