@@ -257,13 +257,13 @@ void GuidedMC::one_iteration() {
 void GuidedMC::check_input() {
   if (m_use_energy_change) {
     throw std::runtime_error(
-        "GMC::check_input: using energy change is not supported");
+        "GuidedMC::check_input: using energy change is not supported");
   }
   if (m_conf_tests.size() + m_late_conf_tests.size() == 0) {
     throw std::runtime_error(
-        "GMC::check_input: there must be at least one "
-        "(late) conf test that determines the gradient in "
-        "a reflection of Galilean Monte Carlo");
+        "GuidedMC::check_input: there must be at least one "
+        "(late) conf test that determines the gradient for "
+        "guided MC");
   }
   if (m_enable_input_warnings) {
     if (m_conf_tests.size() == 0 && m_late_conf_tests.size() == 0) {

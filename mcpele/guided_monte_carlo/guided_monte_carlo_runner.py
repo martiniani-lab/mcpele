@@ -55,7 +55,7 @@ if __name__ == '__main__':
     iterations = 2000  # For large width, 100 iterations with standard_deviation=0.1
     gmc = GuidedMonteCarloRunner(
         potential=NullPotential(), coords=initial_coords, temperature=1.0, pniter=iterations, timestep=0.1,
-        standard_deviation=0.03, normalize_conf_gradient=True, max_timestep=0.0, conftests=(),
+        standard_deviation=0.03, normalize_conf_gradient=True, use_hessian=False, max_timestep=0.0, conftests=(),
         late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
         seeds={"guided_mc": 1}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
         adaptive_acceptance=0.5)
@@ -78,9 +78,9 @@ if __name__ == '__main__':
     resample_velocity_steps = 50
     gmc = GuidedMonteCarloRunner(
         potential=Harmonic(np.array([0.0, 0.0]), 15.0, bdim=2, com=False), coords=initial_coords, temperature=1.0,
-        pniter=iterations, timestep=0.1, standard_deviation=0.03, normalize_conf_gradient=True, max_timestep=0.0,
-        conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), actions=(action,),
-        seeds={"guided_mc": 1}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
+        pniter=iterations, timestep=0.1, standard_deviation=0.03, normalize_conf_gradient=True, use_hessian=False, 
+        max_timestep=0.0, conftests=(), late_conftests=(CheckHypercubicContainerConfigGMC(side_length),), 
+        actions=(action,), seeds={"guided_mc": 1}, adaptive_iterations=0, adaptive_interval=100, adaptive_factor=0.9,
         adaptive_acceptance=0.5)
     gmc.run()
     timeseries = np.concatenate((initial_coords.reshape((1, 2)), action.get_time_series()))
