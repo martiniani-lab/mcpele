@@ -1,2 +1,4 @@
 from ._guided_mc_cpp import _BaseGuidedMCRunner
+from ._guided_mc_cpp import _BaseGuidedMCOptimizerRunner
 from .guided_monte_carlo_runner import GuidedMonteCarloRunner
+from .guided_monte_carlo_optimizer_runner import GuidedMonteCarloOptimizerRunner

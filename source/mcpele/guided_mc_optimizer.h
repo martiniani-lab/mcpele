@@ -1,0 +1,131 @@
+#ifndef _MCPELE_GUIDED_MC_OPTIMIZER_H
+#define _MCPELE_GUIDED_MC_OPTIMIZER_H
+
+#include "pele/optimizer.hpp"
+#include "gmc.h"
+#include "mc.h"
+
+namespace mcpele {
+
+class GuidedMCOptimizer final: public MCBase {
+ public:
+  typedef std::vector<std::shared_ptr<GMCConfTest>> conf_t;
+
+ protected:
+  conf_t m_conf_tests;
+  conf_t m_late_conf_tests;
+  size_t m_E_reject_count;
+  size_t m_conf_reject_count;
+  size_t m_displace_count;
+  std::shared_ptr<pele::GradientOptimizer> m_optimizer;
+  const int m_optimizer_niter;
+  double m_standard_deviation;
+  bool m_forward;
+
+  const size_t m_seed;
+  std::mt19937_64 m_generator;
+  std::normal_distribution<> m_normal_distribution;
+  std::uniform_real_distribution<> m_uniform_distribution;
+  std::uniform_int_distribution<> m_random_bool_distribution;
+
+  const double m_max_standard_deviation;
+  const size_t m_adaptive_interval;
+  const double m_adaptive_factor;
+  const double m_adaptive_min_acceptance_ratio;
+  const double m_adaptive_max_acceptance_ratio;
+  size_t m_adaptive_total_steps;
+  size_t m_adaptive_accepted_steps;
+
+  std::shared_ptr<pele::BasePotential> m_descent_potential;
+  std::shared_ptr<pele::BasePotential> m_ascent_potential;
+
+ public:
+  GuidedMCOptimizer(std::shared_ptr<pele::BasePotential> potential,
+           const pele::Array<double> &coords, double temperature,
+           std::shared_ptr<pele::GradientOptimizer> optimizer,
+           int optimizer_niter, double standard_deviation, size_t rseed,
+           double max_standard_deviation = 0.0, size_t adaptive_interval = 100,
+           double adaptive_factor = 0.9,
+           double adaptive_min_acceptance_ratio = 0.2,
+           double adaptive_max_acceptance_ratio = 0.5);
+  ~GuidedMCOptimizer() override = default;
+  void run(size_t max_iter) override;
+  void one_iteration() override;
+  void check_input() override;
+  std::shared_ptr<TakeStep> get_takestep() const override {
+    throw std::runtime_error("GuidedMCOptimizer::get_takestep: not implemented");
+  }
+
+  double get_standard_deviation() const {
+    // TODO: Hacky way to get m_forward.
+    if (m_forward) {
+      return m_standard_deviation;
+    }
+    return -m_standard_deviation;
+  }
+
+  void set_standard_deviation(const double input) {
+    if (input > 0.0) {
+      m_forward = true;
+      m_standard_deviation = input;
+    } else {
+      m_forward = false;
+      m_standard_deviation = -input;
+    }
+  }
+
+  size_t get_count() const { return m_displace_count; }
+
+  void set_count(const size_t input) { m_displace_count = input; }
+
+  void add_conf_test(const std::shared_ptr<GMCConfTest> &conf_test) {
+    m_conf_tests.push_back(conf_test);
+  }
+
+  void add_late_conf_test(const std::shared_ptr<GMCConfTest> &conf_test) {
+    m_late_conf_tests.push_back(conf_test);
+  }
+
+  const std::vector<size_t> get_changed_atoms() const override {
+    throw std::runtime_error("GuidedMC::get_changed_atoms: not implemented");
+  }
+
+  const std::vector<double> get_changed_coords_old() const override {
+    throw std::runtime_error(
+        "GuidedMC::get_changed_coords_old: not implemented");
+  }
+
+  pele::Array<size_t> get_adaptation_counters() const {
+    pele::Array<size_t> counters(2);
+    counters[0] = m_adaptive_total_steps;
+    counters[1] = m_adaptive_accepted_steps;
+    return counters;
+  }
+
+  void set_adaptation_counters(const pele::Array<size_t> &input) {
+    m_adaptive_total_steps = input[0];
+    m_adaptive_accepted_steps = input[1];
+  }
+
+  pele::Array<size_t> get_counters() const {
+    pele::Array<size_t> counters(5);
+    counters[0] = m_nitercount;
+    counters[1] = m_accept_count;
+    counters[2] = m_E_reject_count;
+    counters[3] = m_conf_reject_count;
+    counters[4] = m_neval;
+    return counters;
+  }
+
+  void set_counters(pele::Array<size_t> const &counters) {
+    m_nitercount = counters[0];
+    m_accept_count = counters[1];
+    m_E_reject_count = counters[2];
+    m_conf_reject_count = counters[3];
+    m_neval = counters[4];
+  }
+};
+
+}
+
+#endif //_MCPELE_GUIDED_MC_OPTIMIZER_H

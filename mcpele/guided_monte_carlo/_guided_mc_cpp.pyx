@@ -97,3 +97,89 @@ class _BaseGuidedMCRunner(_Cdef_GuidedMC, _BaseMCBaseRunner, ABC):
         self.ndim = len(coords)
         self.result = Result()
         self.result.message = []
+
+
+cdef class _Cdef_GuidedMCOptimizer(_Cdef_MCBase):
+    cdef cppGuidedMCOptimizer * thisptr
+    cdef public _pele.BasePotential potential
+    cdef public start_coords
+    cdef public _pele_opt.GradientOptimizer optimizer
+    cdef public int optimizer_niter
+    cdef public double standard_deviation
+    cdef public size_t rseed
+    cdef public double max_standard_deviation
+    cdef public size_t adaptive_interval
+    cdef public double adaptive_factor
+    cdef public double adaptive_min_acceptance_ratio
+    cdef public double adaptive_max_acceptance_ratio
+
+    def __init__(self, _pele.BasePotential potential, coords, double temperature, size_t pniter,
+                 _pele_opt.GradientOptimizer optimizer, int optimizer_niter, double standard_deviation, size_t rseed,
+                 double max_standard_deviation = 0.0, size_t adaptive_interval = 100,
+                 double adaptive_factor = 0.9, double adaptive_min_acceptance_ratio = 0.2,
+                 double adaptive_max_acceptance_ratio = 0.5):
+        cdef np.ndarray[double, ndim=1] cstart_coords = np.array(coords, dtype=float)
+        self.potential = potential
+        self.start_coords = cstart_coords
+        self.temperature = temperature
+        self.niter = pniter
+        self.optimizer = optimizer
+        self.optimizer_niter = optimizer_niter
+        self.standard_deviation = standard_deviation
+        self.rseed = rseed
+        self.max_standard_deviation = max_standard_deviation
+        self.adaptive_interval = adaptive_interval
+        self.adaptive_factor = adaptive_factor
+        self.adaptive_min_acceptance_ratio = adaptive_min_acceptance_ratio
+        self.adaptive_max_acceptance_ratio = adaptive_max_acceptance_ratio
+        self.baseptr = shared_ptr[cppMCBase](
+            <cppMCBase *> new cppGuidedMCOptimizer(self.potential.thisptr,
+                                     _pele.Array[double](<double *> cstart_coords.data, cstart_coords.size),
+                                     self.temperature, self.optimizer.thisptr, self.optimizer_niter,
+                                     self.standard_deviation, self.rseed, self.max_standard_deviation,
+                                     self.adaptive_interval, self.adaptive_factor, self.adaptive_min_acceptance_ratio,
+                                     self.adaptive_max_acceptance_ratio))
+        self.thisptr = <cppGuidedMCOptimizer *> self.baseptr.get()
+
+    def add_conf_test(self, _Cdef_GMCConfTest test):
+        self.thisptr.add_conf_test(test.thisptr)
+
+    def add_late_conf_test(self, _Cdef_GMCConfTest test):
+        self.thisptr.add_late_conf_test(test.thisptr)
+
+    def get_standard_deviation(self):
+        return self.thisptr.get_standard_deviation()
+
+    def set_standard_deviation(self, double standard_deviation):
+        self.thisptr.set_standard_deviation(standard_deviation)
+
+    def get_count(self):
+        return self.thisptr.get_count()
+
+    def set_count(self, size_t count):
+        self.thisptr.set_count(count)
+
+    def get_adaptation_counters(self):
+        return pele_array_to_np_size_t(self.thisptr.get_adaptation_counters())
+
+    def set_adaptation_counters(self, np.ndarray[size_t, ndim=1] input not None):
+        self.thisptr.set_adaptation_counters(array_wrap_np_size_t(input))
+
+    def get_counters(self):
+        return pele_array_to_np_size_t(self.thisptr.get_counters())
+
+    def set_counters(self, np.ndarray[size_t, ndim=1] input not None):
+        self.thisptr.set_counters(array_wrap_np_size_t(input))
+
+
+class _BaseGuidedMCOptimizerRunner(_Cdef_GuidedMCOptimizer, _BaseMCBaseRunner, ABC):
+    def __init__(self, potential, coords, temperature, niter, optimizer, optimizer_niter, standard_deviation, rseed,
+                 max_standard_deviation = 0.0, adaptive_interval = 100, adaptive_factor = 0.9, 
+                 adaptive_min_acceptance_ratio = 0.2, adaptive_max_acceptance_ratio = 0.5):
+        super().__init__(potential, coords, temperature, niter, optimizer, optimizer_niter, standard_deviation, rseed,
+                         max_standard_deviation, adaptive_interval, adaptive_factor,
+                         adaptive_min_acceptance_ratio, adaptive_max_acceptance_ratio)
+        # TODO: THIS FEELS WEIRD
+        self.ndim = len(coords)
+        self.result = Result()
+        self.result.message = []
