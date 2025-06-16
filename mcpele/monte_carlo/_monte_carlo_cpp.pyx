@@ -1,5 +1,6 @@
 # distutils: language = c++
 # distutils: sources = mc.cpp
+# cython: language_level=3str
 
 cimport cython
 cimport numpy as np
@@ -8,8 +9,13 @@ import numpy as np
 import sys
 import abc
 from ctypes import c_size_t as size_t
+
+cimport pele.potentials._pele as _pele
+from pele.potentials._pele cimport shared_ptr, array_wrap_np_size_t, pele_array_to_np_size_t
+from ._pele_mc cimport cppMC, _Cdef_BaseMC, cppAction, _Cdef_Action, cppAcceptTest, _Cdef_AcceptTest, cppConfTest, _Cdef_ConfTest, cppTakeStep, _Cdef_TakeStep
+from libcpp cimport bool as cbool
+
 from pele.optimize import Result
-from pele.potentials._pele cimport array_wrap_np_size_t, pele_array_to_np_size_t
 
 cdef class _Cdef_MC(_Cdef_BaseMC):
     # these are stored so that the memory is not freed
@@ -215,7 +221,7 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         cdef double *xdata = xi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
         cdef size_t i
-        for i in xrange(xi.size()):
+        for i in range(xi.size()):
             x[i] = xdata[i]
 
         return x
@@ -234,7 +240,7 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
         cdef double *xdata = xi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] x = np.zeros(xi.size())
         cdef size_t i
-        for i in xrange(xi.size()):
+        for i in range(xi.size()):
             x[i] = xdata[i]
 
         return x
@@ -344,7 +350,7 @@ cdef class _Cdef_MC(_Cdef_BaseMC):
 
         this is done by setting ``niter`` to infinity
         """
-        print "terminating MC, abort called: mc._niter->->infty"
+        print("terminating MC, abort called: mc._niter->->infty")
         self.thisptr.get().abort()
 
     def __reduce__(self):

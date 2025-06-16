@@ -1,7 +1,7 @@
 cimport pele.potentials._pele as _pele
 cimport pele.optimize._pele_opt as _pele_opt
-#from pele.potentials._pele cimport array_wrap_np
-from _pele_mc cimport cppAction,_Cdef_Action, shared_ptr
+from pele.potentials._pele cimport shared_ptr, array_wrap_np
+from ._pele_mc cimport cppAction, _Cdef_Action
 from libcpp cimport bool as cbool
 from libcpp.deque cimport deque
 

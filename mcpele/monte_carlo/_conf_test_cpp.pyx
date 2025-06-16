@@ -1,13 +1,8 @@
 # distutils: language = c++
 # distutils: sources = conf_test.cpp
-
+# cython: language_level=3str
 
 import sys
-
-#===============================================================================
-# Check spherical container
-#===============================================================================
-
 cdef class _Cdef_CheckSphericalContainer(_Cdef_ConfTest):
     cdef cppCheckSphericalContainer* newptr
     def __cinit__(self, radius, ndim):

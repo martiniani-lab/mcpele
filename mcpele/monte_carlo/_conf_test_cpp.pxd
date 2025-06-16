@@ -1,5 +1,6 @@
 from libcpp cimport bool as cbool
-from _pele_mc cimport cppConfTest, _Cdef_ConfTest, shared_ptr
+from pele.potentials._pele cimport shared_ptr
+from ._pele_mc cimport cppConfTest, _Cdef_ConfTest
 
 cdef extern from "mcpele/check_spherical_container.h" namespace "mcpele":
     cdef cppclass cppCheckSphericalContainer "mcpele::CheckSphericalContainer":

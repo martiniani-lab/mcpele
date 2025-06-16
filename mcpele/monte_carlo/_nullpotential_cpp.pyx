@@ -1,8 +1,9 @@
 # distutils: language = C++
+# cython: language_level=3str
 
 cimport cython
 cimport pele.potentials._pele as _pele
-from _pele_mc cimport shared_ptr
+from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport BasePotential
 
 # use external c++ class

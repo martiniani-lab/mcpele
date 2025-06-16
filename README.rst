@@ -147,14 +147,8 @@ for compilation:
 
 python packages:
 
-1. numpy:
-     We use numpy everywhere for doing numerical work.
-
-#. `pele`_:
+1. `pele`_:
     python energy landscape explorer for potential, minimizers etc.
-
-#. matplotlib:
-     For making plots (e.g. histogram, time series, rdf etc.)
 
 #. mpi4py:
      for replica exchange Monte Carlo
@@ -175,4 +169,4 @@ mcpele has a suite of unit tests.  They can be run using the nose testing
 framework (which can be installed using pip).  The tests are run from the top
 directory with this command::
 
-  nosetests mcpele
+    pytest mcpele

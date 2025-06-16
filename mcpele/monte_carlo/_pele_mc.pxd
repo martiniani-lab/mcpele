@@ -11,7 +11,7 @@ from libcpp.string cimport string
 # mcpele::TakeStep
 #===============================================================================
 
-cdef extern from "mcpele/mc.h" namespace "mcpele":
+cdef extern from "mcpele/mc.h" namespace "mcpele" nogil:
     cdef cppclass cppTakeStep "mcpele::TakeStep"
 
 cdef class _Cdef_TakeStep(object):
@@ -23,7 +23,7 @@ cdef class _Cdef_TakeStep(object):
 # mcpele::AcceptTest
 #===============================================================================
 
-cdef extern from "mcpele/mc.h" namespace "mcpele":
+cdef extern from "mcpele/mc.h" namespace "mcpele" nogil:
     cdef cppclass cppAcceptTest "mcpele::AcceptTest"
 
 cdef class _Cdef_AcceptTest(object):
@@ -35,7 +35,7 @@ cdef class _Cdef_AcceptTest(object):
 # mcpele::ConfTest
 #===============================================================================
 
-cdef extern from "mcpele/mc.h" namespace "mcpele":
+cdef extern from "mcpele/mc.h" namespace "mcpele" nogil:
     cdef cppclass cppConfTest "mcpele::ConfTest"
 
 cdef class _Cdef_ConfTest(object):
@@ -47,7 +47,7 @@ cdef class _Cdef_ConfTest(object):
 # mcpele::Action
 #===============================================================================
 
-cdef extern from "mcpele/mc.h" namespace "mcpele":
+cdef extern from "mcpele/mc.h" namespace "mcpele" nogil:
     cdef cppclass cppAction "mcpele::Action"
 
 cdef class _Cdef_Action(object):
@@ -61,7 +61,7 @@ cdef class _Cdef_Action(object):
 #===============================================================================
 
 
-cdef extern from "mcpele/success_container.h":
+cdef extern from "mcpele/success_container.h" nogil:
     cdef cppclass cppSuccessAccumulator "mcpele::SuccessAccumulator":
         vector[double] get_success_rates() except +
         vector[string] get_step_names() except +
@@ -75,7 +75,7 @@ cdef extern from "mcpele/success_container.h":
 # mcpele::MC
 #===============================================================================
 
-cdef extern from "mcpele/mc.h" namespace "mcpele":
+cdef extern from "mcpele/mc.h" namespace "mcpele" nogil:
     cdef cppclass cppMC "mcpele::MC":
         cppMC(shared_ptr[_pele.cBasePotential], _pele.Array[double]&, double) except +
         void one_iteration() except +

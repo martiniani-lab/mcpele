@@ -1,5 +1,6 @@
 # distutils: language = c++
 # distutils: sources = accept_test.cpp
+# cython: language_level=3str
 
 import sys
 

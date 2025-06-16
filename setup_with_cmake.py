@@ -1,7 +1,3 @@
-from __future__ import print_function
-from builtins import str
-from past.builtins import basestring
-from builtins import object
 import os
 import sys
 import subprocess
@@ -10,31 +6,23 @@ import argparse
 import shlex
 
 import numpy as np
-from distutils import sysconfig
-from numpy.distutils.core import setup
-from numpy.distutils.core import Extension
-from numpy.distutils.command.build_ext import build_ext as old_build_ext
-
 import pele
+import sysconfig
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext as old_build_ext
 
 # Numpy header files
 numpy_lib = os.path.split(np.__file__)[0]
-numpy_include = os.path.join(numpy_lib, "core/include")
+numpy_include = np.get_include()
 
-
-encoding = "utf-8"
 # find pele path
-# note: this is used both for the c++ source files and for the cython pxd files,
-# neither of which are "installed".  This should really point to the source directory.
-# So this will only work if pele was built in-place
 try:
     pelepath = os.path.dirname(pele.__file__)[:-5]
-except:
-    sys.stderr.write("WARNING: could't find path to pele\n")
-    sys.exit()
+except Exception:
+    sys.stderr.write("WARNING: couldn't find path to pele\n")
+    sys.exit(1)
 
-# extract the -j flag and pass save it for running make on the CMake makefile
-# extract -c flag to set compiler
+# argument parsing
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("-j", type=int, default=4)
 parser.add_argument("-c", "--compiler", type=str, default=None)
@@ -48,13 +36,11 @@ parser.add_argument(
     "--build-type",
     type=str,
     default="Release",
-    help="Build type. Default: Release,  types Release, Debug, RelWithDebInfo, MemCheck, Coverage",
+    help="Build type: Release, Debug, RelWithDebInfo, MemCheck",
 )
 
 jargs, remaining_args = parser.parse_known_args(sys.argv)
-
-# record c compiler choice. use unix (gcc) by default
-# Add it back into remaining_args so distutils can see it also
+# record compiler choice
 idcompiler = None
 if not jargs.compiler or jargs.compiler in ("unix", "gnu", "gcc"):
     idcompiler = "unix"
@@ -63,192 +49,59 @@ elif jargs.compiler in ("intelem", "intel", "icc", "icpc"):
     idcompiler = "intel"
     remaining_args += ["-c", idcompiler]
 
-# set the remaining args back as sys.argv
+# reset argv
 sys.argv = remaining_args
 print(jargs, remaining_args)
-if jargs.j is None:
-    cmake_parallel_args = []
-else:
-    cmake_parallel_args = ["-j" + str(jargs.j)]
+cmake_parallel_args = [] if jargs.j is None else [f"-j{jargs.j}"]
 
+# compiler flags by build type
 build_type = jargs.build_type
-if build_type == "Release":
-    cmake_compiler_extra_args = [
-        "-std=c++2a",
-        "-Wall",
-        "-Wextra",
-        "-pedantic",
-        "-O3",
-        "-fPIC",
-        "-DNDEBUG",
-        "-march=native",
-    ]
-elif build_type == "Greene":
-    cmake_compiler_extra_args = [
-        "-std=c++2a",
-        "-Wall",
-        "-Wextra",
-        "-pedantic",
-        "-O3",
-        "-fPIC",
-        "-DNDEBUG",
-        "-unroll",
-        "-ip",
-        "-axCORE-AVX512",
-        "-qopenmp",
-        "-qopt-report-stdout",
-        "-qopt-report-phase=openmp",
-    ]
-elif build_type == "Debug":
-    cmake_compiler_extra_args = [
-        "-std=c++2a",
-        "-Wall",
-        "-Wextra",
-        "-pedantic",
-        "-ggdb3",
-        "-O0",
-        "-fPIC",
-    ]
-elif build_type == "RelWithDebInfo":
-    cmake_compiler_extra_args = [
-        "-std=c++2a",
-        "-Wall",
-        "-Wextra",
-        "-pedantic",
-        "-g",
-        "-O3",
-        "-fPIC",
-    ]
-elif build_type == "MemCheck":
-    cmake_compiler_extra_args = [
-        "-std=c++2a",
-        "-Wall",
-        "-Wextra",
-        "-pedantic",
-        "-g",
-        "-O0",
-        "-fPIC",
-        "-fsanitize=address",
-        "-fsanitize=leak",
-    ]
-else:
-    raise ValueError("Unknown build type: " + build_type)
+flags = {
+    "Release": ["-std=c++2a", "-Wall", "-Wextra", "-pedantic", "-O3", "-fPIC", "-DNDEBUG", "-march=native"],
+    "Debug":   ["-std=c++2a", "-Wall", "-Wextra", "-pedantic", "-ggdb3", "-O0", "-fPIC"],
+    "RelWithDebInfo": ["-std=c++2a", "-Wall", "-Wextra", "-pedantic", "-g", "-O3", "-fPIC"],
+    "MemCheck": ["-std=c++2a", "-Wall", "-Wextra", "-pedantic", "-g", "-O0", "-fPIC", "-fsanitize=address", "-fsanitize=leak"],
+}
+if build_type not in flags:
+    raise ValueError(f"Unknown build type: {build_type}")
+cmake_compiler_extra_args = flags[build_type]
 if idcompiler.lower() == "unix":
     cmake_compiler_extra_args += ["-march=native", "-flto", "-fopenmp"]
 else:
-    cmake_compiler_extra_args += [
-        "-axCORE-AVX2",
-        "-ipo",
-        "-qopenmp",
-        "-ip",
-        "-unroll",
-    ]
+    cmake_compiler_extra_args += ["-axCORE-AVX2", "-ipo", "-qopenmp", "-ip", "-unroll"]
     if jargs.opt_report:
-        cmake_compiler_extra_args += ["-qopt-report=5"]
+        cmake_compiler_extra_args.append("-qopt-report=5")
 
+# write version
 
-#
-# Make the git revision visible.  Most of this is copied from scipy
-#
-# Return the git revision as a string
 def git_version():
     def _minimal_ext_cmd(cmd):
-        # construct minimal environment
-        env = {}
-        for k in ["SYSTEMROOT", "PATH"]:
-            v = os.environ.get(k)
-            if v is not None:
-                env[k] = v
-        # LANGUAGE is used on win32
-        env["LANGUAGE"] = "C"
-        env["LANG"] = "C"
-        env["LC_ALL"] = "C"
-        out = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, env=env
-        ).communicate()[0]
-        return out
-
+        env = {k: os.environ[k] for k in ("SYSTEMROOT", "PATH") if k in os.environ}
+        env.update({"LANGUAGE": "C", "LANG": "C", "LC_ALL": "C"})
+        return subprocess.check_output(cmd, env=env)
     try:
-        out = _minimal_ext_cmd(["git", "rev-parse", "HEAD"])
-        GIT_REVISION = out.strip().decode("ascii")
-    except OSError:
-        GIT_REVISION = "Unknown"
+        out = _minimal_ext_cmd(["git", "rev-parse", "HEAD"]);
+        return out.strip().decode()
+    except Exception:
+        return "Unknown"
 
-    return GIT_REVISION
+os.makedirs(os.path.dirname("mcpele/version.py"), exist_ok=True)
+with open("mcpele/version.py", "w") as f:
+    f.write(f"# GENERATED\ngit_revision = '{git_version()}'\n")
 
-
-def write_version_py(filename="mcpele/version.py"):
-    cnt = """
-# THIS FILE IS GENERATED FROM SCIPY SETUP.PY
-git_revision = '%(git_revision)s'
-"""
-    GIT_REVISION = git_version()
-
-    a = open(filename, "w")
-    try:
-        a.write(cnt % dict(git_revision=GIT_REVISION))
-    finally:
-        a.close()
-
-
-write_version_py()
-
+# cythonize
 
 def generate_cython():
-    cwd = os.path.abspath(os.path.dirname(__file__))
+    cwd = os.path.dirname(__file__)
     print("Cythonizing sources")
-    p = subprocess.call(
-        [
-            sys.executable,
-            os.path.join(cwd, "cythonize.py"),
-            "mcpele",
-            "-I %s/pele/potentials/" % pelepath,
-        ],
-        cwd=cwd,
-    )
-    if p != 0:
+    cmd = [sys.executable, os.path.join(cwd, "cythonize.py"), "mcpele", "-I", f"{pelepath}/pele/potentials/"]
+    if subprocess.call(cmd, cwd=cwd) != 0:
         raise RuntimeError("Running cythonize failed!")
-
 
 generate_cython()
 
-
-#
-# compile fortran extension modules
-#
-
-
-class ModuleList(object):
-    def __init__(self, **kwargs):
-        self.module_list = []
-        self.kwargs = kwargs
-
-    def add_module(self, filename):
-        modname = filename.replace("/", ".")
-        modname, ext = os.path.splitext(modname)
-        self.module_list.append(Extension(modname, [filename], **self.kwargs))
-
-
-setup(
-    name="mcpele",
-    version="0.1",
-    description="mcpele is a library of monte carlo and parallel tempering routines buil on the pele foundation",
-    url="https://github.com/pele-python/mcpele",
-    packages=[
-        "mcpele",
-        "mcpele.monte_carlo",
-        "mcpele.parallel_tempering",
-        # add the test directories
-        "mcpele.monte_carlo.tests",
-        "mcpele.parallel_tempering.tests",
-    ],
-)
-
-#
-# build the c++ files
-#
-
-cmake_build_dir = "build/cmake"
+# CMake build dir
+cmake_build_dir = os.path.join(os.getcwd(), "build", "cmake")
 
 cxx_files = [
     "mcpele/monte_carlo/_pele_mc.cxx",
@@ -260,175 +113,80 @@ cxx_files = [
     "mcpele/monte_carlo/_nullpotential_cpp.cxx",
 ]
 
-
-def get_ldflags(opt="--ldflags"):
-    """return the ldflags.  This was taken directly from python-config"""
-    getvar = sysconfig.get_config_var
-    pyver = sysconfig.get_config_var("VERSION")
-    libs = getvar("LIBS").split() + getvar("SYSLIBS").split()
-    libs.append("-lpython" + pyver)
-    # add the prefix/lib/pythonX.Y/config dir, but only if there is no
-    # shared library in prefix/lib/.
-    if opt == "--ldflags":
-        if not getvar("Py_ENABLE_SHARED"):
-            libs.insert(0, "-L" + getvar("LIBDIR"))
-        if not getvar("PYTHONFRAMEWORK"):
-            libs.extend(getvar("LINKFORSHARED").split())
+def get_ldflags():
+    gv = sysconfig.get_config_var
+    pyver = gv("VERSION")
+    libs = gv("LIBS").split() + gv("SYSLIBS").split() + [f"-lpython{pyver}"]
+    if not gv("Py_ENABLE_SHARED"):
+        libs.insert(0, "-L" + gv("LIBDIR"))
+    if not gv("PYTHONFRAMEWORK"):
+        libs += gv("LINKFORSHARED").split()
     return " ".join(libs)
 
-
-# create file CMakeLists.txt from CMakeLists.txt.in
-with open("CMakeLists.txt.in", "r") as fin:
-    cmake_txt = fin.read()
-# We first tell cmake where the include directories are
-cmake_txt = cmake_txt.replace("__PELE_DIR__", pelepath)
-# note: the code to find python_includes was taken from the python-config executable
-python_includes = [
-    sysconfig.get_python_inc(),
-    sysconfig.get_python_inc(plat_specific=True),
-]
-cmake_txt = cmake_txt.replace("__PYTHON_INCLUDE__", " ".join(python_includes))
-if isinstance(numpy_include, basestring):
-    numpy_include = [numpy_include]
-cmake_txt = cmake_txt.replace("__NUMPY_INCLUDE__", " ".join(numpy_include))
-cmake_txt = cmake_txt.replace("__PYTHON_LDFLAGS__", get_ldflags())
-cmake_txt = cmake_txt.replace(
-    "__COMPILER_EXTRA_ARGS__",
-    '"{}"'.format(" ".join(cmake_compiler_extra_args)),
+# generate CMakeLists.txt
+with open("CMakeLists.txt.in") as fin:
+    template = fin.read()
+cmake_txt = (template
+    .replace("__PELE_DIR__", pelepath)
+    .replace("__PYTHON_INCLUDE__", " ".join(sysconfig.get_paths()["include"].split(os.pathsep)))
+    .replace("__NUMPY_INCLUDE__", numpy_include)
+    .replace("__PYTHON_LDFLAGS__", get_ldflags())
+    .replace("__COMPILER_EXTRA_ARGS__", '"%s"' % " ".join(cmake_compiler_extra_args))
 )
-# Now we tell cmake which librarires to build
 with open("CMakeLists.txt", "w") as fout:
-    fout.write(cmake_txt)
-    fout.write("\n")
-    for fname in cxx_files:
-        fout.write("make_cython_lib(${CMAKE_SOURCE_DIR}/%s)\n" % fname)
+    fout.write(cmake_txt + "\n")
+    for src in cxx_files:
+        fout.write(f"make_cython_lib(${{CMAKE_CURRENT_SOURCE_DIR}}/{src})\n")
 
-
-def set_compiler_env(compiler_id):
-    """
-    set environment variables for the C and C++ compiler:
-    set CC and CXX paths to `which` output because cmake
-    does not alway choose the right compiler
-    """
+# prepare compiler environment
+def set_compiler_env(cid):
+    cc = shutil.which("gcc" if cid == "unix" else "icc")
+    cxx = shutil.which("g++" if cid == "unix" else "icpc")
+    ld = shutil.which("ld" if cid == "unix" else "xild")
+    ar = shutil.which("ar" if cid == "unix" else "xiar")
     env = os.environ.copy()
-    if compiler_id.lower() in ("unix"):
-        print(env, "eeenv")
-        env["CC"] = (
-            (subprocess.check_output(["which", "gcc"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-        env["CXX"] = (
-            (subprocess.check_output(["which", "g++"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-        env["LD"] = (
-            (subprocess.check_output(["which", "ld"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-        env["AR"] = (
-            (subprocess.check_output(["which", "ar"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-    elif compiler_id.lower() in ("intel"):
-        env["CC"] = (
-            (subprocess.check_output(["which", "icc"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-        env["CXX"] = (
-            (subprocess.check_output(["which", "icpc"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-        env["LD"] = (
-            (subprocess.check_output(["which", "xild"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-        env["AR"] = (
-            (subprocess.check_output(["which", "xiar"]))
-            .decode(encoding)
-            .rstrip("\n")
-        )
-    else:
-        raise Exception("compiler_id not known")
-    # this line only works is the build directory has been deleted
-    cmake_compiler_args = shlex.split(
-        "-D CMAKE_C_COMPILER={} -D CMAKE_CXX_COMPILER={} "
-        "-D CMAKE_LINKER={} -D CMAKE_AR={}".format(
-            env["CC"], env["CXX"], env["LD"], env["AR"]
-        )
-    )
-    return env, cmake_compiler_args
+    env.update({"CC": cc, "CXX": cxx, "LD": ld, "AR": ar})
+    args = [f"-D CMAKE_C_COMPILER={cc}",
+            f"-D CMAKE_CXX_COMPILER={cxx}",
+            f"-D CMAKE_LINKER={ld}",
+            f"-D CMAKE_AR={ar}"]
+    return env, args
 
+# run CMake and build
+os.makedirs(cmake_build_dir, exist_ok=True)
 
-def run_cmake(compiler_id="unix"):
-    if not os.path.isdir(cmake_build_dir):
-        os.makedirs(cmake_build_dir)
-    print("\nrunning cmake in directory", cmake_build_dir)
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    env, cmake_compiler_args = set_compiler_env(compiler_id)
+def run_cmake():
+    cwd = os.getcwd()
+    env, cmake_args = set_compiler_env(idcompiler)
+    subprocess.check_call(["cmake", *cmake_args, cwd], cwd=cmake_build_dir, env=env)
+    subprocess.check_call(["make", *cmake_parallel_args], cwd=cmake_build_dir, env=env)
+    print("CMake build completed")
 
-    p = subprocess.call(
-        ["cmake"] + cmake_compiler_args + [cwd], cwd=cmake_build_dir, env=env
-    )
-    if p != 0:
-        raise Exception("running cmake failed")
-    print("\nbuilding files in cmake directory")
-    if len(cmake_parallel_args) > 0:
-        print("make flags:", cmake_parallel_args)
-    p = subprocess.call(["make"] + cmake_parallel_args, cwd=cmake_build_dir)
-    if p != 0:
-        raise Exception("building libraries with CMake Makefile failed")
-    print("finished building the extension modules with cmake\n")
+run_cmake()
 
-
-run_cmake(compiler_id=idcompiler)
-
-
-# Now that the cython libraries are built, we have to make sure they are copied to
-# the correct location.  This means in the source tree if build in-place, or
-# somewhere in the build/ directory otherwise.  The standard distutils
-# knows how to do this best.  We will overload the build_ext command class
-# to simply copy the pre-compiled libraries into the right place
+# custom build_ext to copy .so artifacts
 class build_ext_precompiled(old_build_ext):
     def build_extension(self, ext):
-        """overload the function that build the extension
-
-        This does nothing but copy the precompiled library stored in extension.sources[0]
-        to the correct destination based on extension.name and whether it is an in-place build
-        or not.
-        """
         ext_path = self.get_ext_fullpath(ext.name)
-        pre_compiled_library = ext.sources[0]
-        if pre_compiled_library[-3:] != ".so":
-            raise RuntimeError(
-                "library is not a .so file: " + pre_compiled_library
-            )
-        if not os.path.isfile(pre_compiled_library):
-            raise RuntimeError(
-                "file does not exist: "
-                + pre_compiled_library
-                + " Did CMake not run correctly"
-            )
-        print("copying", pre_compiled_library, "to", ext_path)
-        shutil.copy2(pre_compiled_library, ext_path)
+        lib = ext.sources[0]
+        if not (lib.endswith(".so") and os.path.isfile(lib)):
+            raise RuntimeError(f"Invalid library: {lib}")
+        os.makedirs(os.path.dirname(ext_path), exist_ok=True)
+        shutil.copy2(lib, ext_path)
 
+# setuptools setup
+extensions = [Extension(src.replace("/", ".").rsplit(".",1)[0], [os.path.join(cmake_build_dir, os.path.basename(src).replace('.cxx','.so'))])
+              for src in cxx_files]
 
-# Construct extension modules for all the cxx files
-# The `name` of the extension is, as usual, the python path (e.g. pele.optimize._lbfgs_cpp).
-# The `source` of the extension is the location of the .so file
-cxx_modules = []
-for fname in cxx_files:
-    name = fname.replace(".cxx", "")
-    name = name.replace("/", ".")
-    lname = os.path.basename(fname)
-    lname = lname.replace(".cxx", ".so")
-    pre_compiled_lib = os.path.join(cmake_build_dir, lname)
-    cxx_modules.append(Extension(name, [pre_compiled_lib]))
-
-setup(cmdclass=dict(build_ext=build_ext_precompiled), ext_modules=cxx_modules)
+setup(
+    name="mcpele",
+    version="0.1",
+    description="mcpele: Monte Carlo and parallel tempering on pele foundation",
+    url="https://github.com/pele-python/mcpele",
+    packages=[
+        "mcpele", "mcpele.monte_carlo", "mcpele.parallel_tempering",
+        "mcpele.monte_carlo.tests", "mcpele.parallel_tempering.tests"
+    ],
+    cmdclass={"build_ext": build_ext_precompiled},
+    ext_modules=extensions,
+)

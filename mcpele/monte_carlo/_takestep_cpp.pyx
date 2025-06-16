@@ -1,12 +1,16 @@
 # distutils: language = c++
 # distutils: sources = takestep.cpp
+# cython: language_level=3str
 
 import sys
 import numpy as np
 cimport numpy as np
 from ctypes import c_size_t as size_t
-from pele.potentials import _pele
-from pele.potentials._pele cimport array_wrap_np, array_wrap_np_size_t, pele_array_to_np_size_t
+
+cimport pele.potentials._pele as _pele
+from pele.potentials._pele cimport shared_ptr, array_wrap_np, array_wrap_np_size_t, pele_array_to_np_size_t
+from ._pele_mc cimport cppTakeStep, _Cdef_TakeStep
+
 
 #===============================================================================
 # RandomCoordsDisplacement

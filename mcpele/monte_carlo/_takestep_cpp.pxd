@@ -1,5 +1,6 @@
 cimport pele.potentials._pele as _pele
-from _pele_mc cimport cppTakeStep,_Cdef_TakeStep, shared_ptr
+from pele.potentials._pele cimport shared_ptr
+from ._pele_mc cimport cppTakeStep, _Cdef_TakeStep, shared_ptr
 
 cdef extern from "mcpele/random_coords_displacement.h" namespace "mcpele":
     cdef cppclass cppRandomCoordsDisplacement "mcpele::RandomCoordsDisplacement":

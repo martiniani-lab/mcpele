@@ -1,5 +1,6 @@
 # distutils: language = c++
 # distutils: sources = actions.cpp
+# cython: language_level=3str
 
 cimport cython
 cimport numpy as np
@@ -7,7 +8,15 @@ cimport numpy as np
 import numpy as np
 import sys
 
-from pele.potentials._pele cimport array_wrap_np
+
+# cython has no support for integer template argument.  This is a hack to get around it
+# https://groups.google.com/forum/#!topic/cython-users/xAZxdCFw6Xs
+# Basically you fool cython into thinking INT2 is the type integer,
+# but in the generated c++ code you use 2 instead.
+# The cython code MyClass[INT2] will create c++ code MyClass<2>.
+cdef extern from *:
+    ctypedef int INT2 "2"    # a fake type
+    ctypedef int INT3 "3"    # a fake type
 
 #===============================================================================
 # Record Energy Histogram
@@ -33,7 +42,7 @@ cdef class _Cdef_RecordEnergyHistogram(_Cdef_Action):
         cdef double *histdata = histi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] hist = np.zeros(histi.size())
         cdef size_t i
-        for i in xrange(histi.size()):
+        for i in range(histi.size()):
             hist[i] = histdata[i]
               
         return hist
@@ -152,7 +161,7 @@ cdef class  _Cdef_RecordPairDistHistogram(_Cdef_Action):
         cdef double *histdata = histi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] hist = np.zeros(histi.size())
         cdef size_t i
-        for i in xrange(histi.size()):
+        for i in range(histi.size()):
             hist[i] = histdata[i]      
         return hist
     
@@ -172,7 +181,7 @@ cdef class  _Cdef_RecordPairDistHistogram(_Cdef_Action):
         cdef double *histdata = histi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] hist = np.zeros(histi.size())
         cdef size_t i
-        for i in xrange(histi.size()):
+        for i in range(histi.size()):
             hist[i] = histdata[i]      
         return hist
     
@@ -243,7 +252,7 @@ cdef class _Cdef_RecordEnergyTimeseries(_Cdef_Action):
         cdef double *seriesdata = seriesi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] series = np.zeros(seriesi.size())
         cdef size_t i
-        for i in xrange(seriesi.size()):
+        for i in range(seriesi.size()):
             series[i] = seriesdata[i]
               
         return series
@@ -299,7 +308,7 @@ cdef class _Cdef_RecordLowestEValueTimeseries(_Cdef_Action):
         cdef double *seriesdata = seriesi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] series = np.zeros(seriesi.size())
         cdef size_t i
-        for i in xrange(seriesi.size()):
+        for i in range(seriesi.size()):
             series[i] = seriesdata[i]
               
         return series
@@ -367,7 +376,7 @@ cdef class _Cdef_RecordDisplacementPerParticleTimeseries(_Cdef_Action):
         cdef double *seriesdata = seriesi.data()
         cdef np.ndarray[double, ndim=1, mode="c"] series = np.zeros(seriesi.size())
         cdef size_t i
-        for i in xrange(seriesi.size()):
+        for i in range(seriesi.size()):
             series[i] = seriesdata[i]
               
         return series
@@ -419,9 +428,9 @@ cdef class _Cdef_RecordCoordsTimeseries(_Cdef_Action):
         cdef double *seriesdata
         cdef np.ndarray[double, ndim=2, mode="c"] series = np.zeros((dq.size(), dq[0].size()))
         cdef size_t i, j
-        for i in xrange(dq.size()):
+        for i in range(dq.size()):
             seriesdata = dq[i].data()
-            for j in xrange(dq[i].size()):
+            for j in range(dq[i].size()):
                 series[i][j] = seriesdata[j]
         return series
     
@@ -444,7 +453,7 @@ cdef class _Cdef_RecordCoordsTimeseries(_Cdef_Action):
         cdef np.ndarray[double, ndim=1, mode="c"] coord = np.zeros(coordi.size())
         cdef np.ndarray[double, ndim=1, mode="c"] var = np.zeros(vari.size())
         cdef size_t i
-        for i in xrange(coordi.size()):
+        for i in range(coordi.size()):
             coord[i] = coorddata[i]
             var[i] = vardata[i]
         return coord, var
