@@ -2,21 +2,25 @@ name: Tests
 
 on:
   push:
-    branches: ["master", "packaging"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
   workflow_dispatch:
 
 jobs:
-  # pip install pele then mcpele into a conda-forge environment (the path users
-  # and the conda recipe take), then test the installed package from outside the source tree
+  # the README install, verbatim: conda env (unpinned), then pip install pele and mcpele;
+  # then test the installed package from outside the source tree
   pip-install:
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-latest]
+        # newest Python (unpinned); Ubuntu uses the system compilers, macOS conda's
+        include:
+          - {os: ubuntu-24.04, compilers: ""}
+          - {os: macos-latest, compilers: compilers}
     runs-on: ${{ matrix.os }}
+    name: pip-install (${{ matrix.os }}${{ matrix.compilers && ', conda compilers' || '' }})
     defaults:
       run:
         shell: bash -l {0}
@@ -24,33 +28,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout pele
-        uses: actions/checkout@v4
-        with:
-          repository: martiniani-lab/pele
-          path: deps/pele
-
-      - name: Set up conda-forge environment
+      - name: Set up conda
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
-          activate-environment: mcpele-pip
-          python-version: "3.12"
+          activate-environment: ""
 
-      - name: Install build dependencies
-        run: >
-          conda install -y -c conda-forge compilers cmake ninja meson "sundials>=6.2"
-          eigen blas-devel llvm-openmp numpy "cython>=3" setuptools pip pytest pytest-cov
-          scipy networkx matplotlib-base "sqlalchemy>=1.4,<2" munkres pyro4 future
+      - name: Create environment
+        run: conda create -y -n mcpele -c conda-forge python sundials eigen blas-devel ${{ matrix.compilers }}
 
       - name: pip install pele
-        run: PELE_NATIVE=0 python -m pip install ./deps/pele -v --no-deps --no-build-isolation
+        run: |
+          conda activate mcpele
+          python --version
+          python -m pip install git+https://github.com/martiniani-lab/pele -v
 
       - name: pip install mcpele
-        run: MCPELE_NATIVE=0 python -m pip install . -v --no-deps --no-build-isolation
+        run: |
+          conda activate mcpele
+          python -m pip install . -v
 
       - name: Test installed package with coverage
         run: |
+          conda activate mcpele
+          python -m pip install pytest pytest-cov
           cd "$RUNNER_TEMP"
           OMP_NUM_THREADS=1 python -m pytest --pyargs mcpele -v \
             --cov=mcpele --cov-report=xml:"$GITHUB_WORKSPACE/coverage.xml" --cov-report=term-missing

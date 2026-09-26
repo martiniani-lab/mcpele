@@ -139,32 +139,36 @@ from a few lines of a pure Python interface. Finally we might want to *show* or 
 
 INSTALLATION
 ============
+We recommend creating a conda environment to work with the package. mcpele builds on
+`pele <https://github.com/martiniani-lab/pele>`__, which is installed first::
 
-mcpele builds against an installed `pele <https://github.com/martiniani-lab/pele>`__
-(neither is on PyPI). All build dependencies come from conda-forge::
-
-  $ conda create -n mcpele -c conda-forge python=3.12 compilers cmake ninja meson \
-        "sundials>=6.2" eigen blas-devel llvm-openmp numpy "cython>=3" setuptools pip \
-        scipy networkx matplotlib-base "sqlalchemy>=1.4,<2" munkres pyro4 future pytest
+  $ conda create -n mcpele -c conda-forge python compilers sundials eigen blas-devel
   $ conda activate mcpele
-  $ pip install --no-build-isolation git+https://github.com/martiniani-lab/pele
-  $ pip install --no-build-isolation .   # or: pip install --no-build-isolation git+https://github.com/martiniani-lab/mcpele
+  $ pip install git+https://github.com/martiniani-lab/pele
+  $ pip install git+https://github.com/martiniani-lab/mcpele
 
-For parallel tempering also install :code:`mpi4py` (:code:`conda install -c conda-forge mpi4py`).
+If the machine already has gcc, g++ and gfortran (e.g. :code:`sudo apt install gcc g++ gfortran`),
+leave out :code:`compilers` for a much smaller environment.
 
-Build options are environment variables, e.g. :code:`MCPELE_BUILD_TYPE=Debug`,
-:code:`MCPELE_JOBS=8`, and :code:`MCPELE_NATIVE=0` (disable :code:`-march=native` when the
-build must run on other machines).
+Optional: :code:`mpi4py` (:code:`conda install -c conda-forge mpi4py`) for parallel tempering.
 
-On macOS, unless :code:`CC`/:code:`CXX` are set, mcpele (like pele) builds with the newest
-Homebrew :code:`gcc-N` (:code:`brew install gcc`); Apple clang has no OpenMP support.
+Development
+-----------
 
-For development, the in-place build still works: :code:`python setup.py build_ext -i`.
+From a clone, in the same environment::
+
+  $ pip install .                  # install, or
+  $ python setup.py build_ext -i   # build in place; then put the clone on PYTHONPATH
+
+Build options are environment variables: :code:`MCPELE_BUILD_TYPE=Debug`,
+:code:`MCPELE_JOBS=8`, and :code:`MCPELE_NATIVE=0` (no :code:`-march=native`, for binaries
+that run on other machines).
 
 Tests
 =====
 mcpele has a suite of unit tests. Run them against the installed package with::
 
-    pytest --pyargs mcpele
+    $ pip install pytest
+    $ OMP_NUM_THREADS=1 pytest --pyargs mcpele
 
 or from the top of an in-place build with :code:`pytest mcpele`.
