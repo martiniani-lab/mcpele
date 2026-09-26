@@ -1,8 +1,10 @@
-.. image:: https://travis-ci.org/pele-python/mcpele.svg?branch=master
-    :target: https://travis-ci.org/pele-python/mcpele
+.. image:: https://github.com/martiniani-lab/mcpele/actions/workflows/test.yml/badge.svg?branch=master
+   :target: https://github.com/martiniani-lab/mcpele/actions/workflows/test.yml
+   :alt: Build Status
 
-.. image:: https://coveralls.io/repos/pele-python/mcpele/badge.png?branch=master
-    :target: https://coveralls.io/r/pele-python/mcpele?branch=master
+.. image:: https://codecov.io/gh/martiniani-lab/mcpele/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/martiniani-lab/mcpele
+   :alt: Coverage Status
 
 mcpele : Monte Carlo Python Energy Landscape Explorer
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -20,7 +22,7 @@ simulation eliminating the need for frequent code rewriting that experienced
 Monte Carlo developers typically go through, thus reducing the time required for
 the implementation of an idea and reducing the occurrence of bugs.
 
-Source code: https://github.com/pele-python/mcpele
+Source code: https://github.com/martiniani-lab/mcpele
 
 Documentation: http://pele-python.github.io/mcpele/
 
@@ -138,35 +140,31 @@ from a few lines of a pure Python interface. Finally we might want to *show* or 
 INSTALLATION
 ============
 
-Required packages
------------------
+mcpele builds against an installed `pele <https://github.com/martiniani-lab/pele>`__
+(neither is on PyPI). All build dependencies come from conda-forge::
 
-for compilation:
+  $ conda create -n mcpele -c conda-forge python=3.12 compilers cmake ninja meson \
+        "sundials>=6.2" eigen blas-devel llvm-openmp numpy "cython>=3" setuptools pip \
+        scipy networkx matplotlib-base "sqlalchemy>=1.4,<2" munkres pyro4 future pytest
+  $ conda activate mcpele
+  $ pip install --no-build-isolation git+https://github.com/martiniani-lab/pele
+  $ pip install --no-build-isolation .   # or: pip install --no-build-isolation git+https://github.com/martiniani-lab/mcpele
 
-1. c++ compiler (must support c++11, GCC > 4.6 or similar)
+For parallel tempering also install :code:`mpi4py` (:code:`conda install -c conda-forge mpi4py`).
 
-python packages:
+Build options are environment variables, e.g. :code:`MCPELE_BUILD_TYPE=Debug`,
+:code:`MCPELE_JOBS=8`, and :code:`MCPELE_NATIVE=0` (disable :code:`-march=native` when the
+build must run on other machines).
 
-1. `pele`_:
-    python energy landscape explorer for potential, minimizers etc.
+On macOS, unless :code:`CC`/:code:`CXX` are set, mcpele (like pele) builds with the newest
+Homebrew :code:`gcc-N` (:code:`brew install gcc`); Apple clang has no OpenMP support.
 
-#. mpi4py:
-     for replica exchange Monte Carlo
-
-non-python packages:
-
-1. cmake: optional
-    to compile using cmake (much faster)
-
-All the above packages can be installed via the python package manager pip (or
-easy_install), with the exception of pele.  However, some of the packages (numpy, scipy)
-have additional dependencies and it can be more convenient to use the linux package manager
-(apt, yum, ...).
+For development, the in-place build still works: :code:`python setup.py build_ext -i`.
 
 Tests
 =====
-mcpele has a suite of unit tests.  They can be run using the nose testing
-framework (which can be installed using pip).  The tests are run from the top
-directory with this command::
+mcpele has a suite of unit tests. Run them against the installed package with::
 
-    pytest mcpele
+    pytest --pyargs mcpele
+
+or from the top of an in-place build with :code:`pytest mcpele`.
