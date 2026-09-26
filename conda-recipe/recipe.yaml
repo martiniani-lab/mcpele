@@ -1,0 +1,67 @@
+# rattler-build recipe, intended for conda-forge/staged-recipes (after pele is on conda-forge).
+# local test: rattler-build build -r conda-recipe/recipe.yaml -c conda-forge -c <channel with pele>
+context:
+  name: mcpele
+  version: "0.1.0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  # TODO(release): switch to the tagged tarball + sha256 for conda-forge
+  path: ..
+
+build:
+  number: 0
+  skip:
+    - win
+  script:
+    env:
+      MCPELE_NATIVE: "0"  # portable binaries, no -march=native
+    content: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - ${{ stdlib('c') }}
+    - cmake >=3.18
+    - ninja
+  host:
+    - python
+    - pip
+    - setuptools >=65
+    - wheel
+    - cython >=3
+    - numpy
+    - pele
+    - eigen
+    - sundials >=6.2
+    - libblas
+    - liblapack
+    - blas-devel
+    - if: osx
+      then: llvm-openmp
+  run:
+    - python
+    - pele
+    - numpy
+    - future
+
+tests:
+  - python:
+      imports:
+        - mcpele
+        - mcpele.monte_carlo._monte_carlo_cpp
+      pip_check: false
+
+about:
+  homepage: https://github.com/martiniani-lab/mcpele
+  summary: Monte Carlo and parallel tempering built on pele
+  license: GPL-3.0-or-later
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - spraharsh

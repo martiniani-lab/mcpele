@@ -1,0 +1,21 @@
+[build-system]
+# pele is needed at build time for its C++ sources and .pxd files; it is not on
+# PyPI, so build with `pip install --no-build-isolation .` in an env that has pele.
+requires = ["setuptools>=65", "wheel", "numpy>=1.24", "cython>=3", "cmake>=3.18", "ninja", "pele"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcpele"
+version = "0.1.0"
+description = "Monte Carlo and parallel tempering built on pele"
+readme = "README.rst"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = ["pele", "numpy>=1.24", "future"]
+
+[project.optional-dependencies]
+mpi = ["mpi4py"]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/martiniani-lab/mcpele"
