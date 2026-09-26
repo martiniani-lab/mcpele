@@ -24,12 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ponytail: pele pinned to its packaging branch until that lands on master
       - name: Checkout pele
         uses: actions/checkout@v4
         with:
           repository: martiniani-lab/pele
-          ref: packaging
           path: deps/pele
 
       - name: Set up conda-forge environment
